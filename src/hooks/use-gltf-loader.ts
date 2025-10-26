@@ -39,7 +39,7 @@ export function useGLTFLoader() {
 
         // Check if user needs to choose import option
         const hasMesh = analysis.metadata.vertices > 0
-        const hasAnimations = analysis.metadata.animations > 0
+        const hasAnimations = (analysis.metadata.animations ?? 0) > 0
 
         // If has both and no option selected yet, return and ask user
         if (!uploadOption && hasMesh && hasAnimations) {

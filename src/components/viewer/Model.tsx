@@ -55,6 +55,7 @@ export function Model() {
       action.stop()
       actionRef.current = null
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentAnimation])
 
   // Update loop setting

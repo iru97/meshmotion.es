@@ -30,7 +30,7 @@ export interface GLBMetadata {
   triangles: number
   materials: number
   textures: string[]
-  animations: number
+  animations?: number
 }
 
 /**

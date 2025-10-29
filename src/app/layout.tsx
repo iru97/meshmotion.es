@@ -1,8 +1,12 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const spaceGrotesk = localFont({
+  src: '../../public/fonts/Space_Grotesk/SpaceGrotesk-VariableFont_wght.ttf',
+  variable: '--font-space-grotesk',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: '3D Next Viewer - Advanced GLB Animation Viewer',
@@ -18,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={spaceGrotesk.className}>
         {children}
       </body>
     </html>

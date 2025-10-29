@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useState, ChangeEvent } from 'react'
+import { useCallback, useRef, useState, useEffect, ChangeEvent } from 'react'
 import { useFileDrop } from '@/hooks/use-file-drop'
 import { useGLTFLoader, UploadOption } from '@/hooks/use-gltf-loader'
 import { Upload } from 'lucide-react'
@@ -82,6 +82,20 @@ export function DropZone() {
     fileInputRef.current?.click()
   }, [])
 
+  // Listen for upload events from ActionToolbar
+  useEffect(() => {
+    const handleUploadEvent = (e: CustomEvent) => {
+      if (e.detail?.files) {
+        handleFiles(e.detail.files)
+      }
+    }
+
+    window.addEventListener('glb-file-upload', handleUploadEvent as EventListener)
+    return () => {
+      window.removeEventListener('glb-file-upload', handleUploadEvent as EventListener)
+    }
+  }, [handleFiles])
+
   return (
     <>
       <div
@@ -102,21 +116,7 @@ export function DropZone() {
         </div>
       </div>
 
-      {/* Upload Button - Top Right, next to Settings - Hidden when sidebar is open */}
-      {!showRightSidebar && (
-        <button
-          onClick={handleClick}
-          className={cn(
-            'fixed top-4 right-[68px] z-30 p-3 transition-all duration-200 active:scale-95 rounded-full',
-            theme.glassPanelDark,
-            theme.hover
-          )}
-          title="Upload GLB"
-        >
-          <Upload className={cn('w-5 h-5', theme.iconPrimary)} />
-        </button>
-      )}
-
+      {/* Hidden file input for drag-drop zone click */}
       <input
         ref={fileInputRef}
         type="file"

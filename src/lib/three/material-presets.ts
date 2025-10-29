@@ -155,3 +155,60 @@ export function applyMaterialPreset(
   // Then apply the preset
   config.apply(object)
 }
+
+/**
+ * Get the original material for a mesh from the WeakMap
+ * Used for cloning with original materials
+ */
+export function getOriginalMaterial(mesh: THREE.Mesh | THREE.SkinnedMesh): THREE.Material | THREE.Material[] | undefined {
+  return originalMaterials.get(mesh)
+}
+
+/**
+ * Clone an object's materials from another object's stored originals
+ * This is useful for cloning models with their original textures
+ */
+export function cloneWithOriginalMaterials(
+  source: THREE.Object3D,
+  target: THREE.Object3D
+) {
+  const sourceMeshes: (THREE.Mesh | THREE.SkinnedMesh)[] = []
+  const targetMeshes: (THREE.Mesh | THREE.SkinnedMesh)[] = []
+
+  // Collect meshes from both objects in the same order
+  source.traverse((child) => {
+    if (child instanceof THREE.Mesh || child instanceof THREE.SkinnedMesh) {
+      sourceMeshes.push(child)
+    }
+  })
+
+  target.traverse((child) => {
+    if (child instanceof THREE.Mesh || child instanceof THREE.SkinnedMesh) {
+      targetMeshes.push(child)
+    }
+  })
+
+  // Clone original materials from source to target
+  for (let i = 0; i < Math.min(sourceMeshes.length, targetMeshes.length); i++) {
+    const sourceMesh = sourceMeshes[i]
+    const targetMesh = targetMeshes[i]
+
+    const originalMaterial = originalMaterials.get(sourceMesh)
+
+    if (originalMaterial) {
+      // Clone the original material
+      if (Array.isArray(originalMaterial)) {
+        const clonedMaterials = originalMaterial.map((mat) => mat.clone())
+        targetMesh.material = clonedMaterials
+        originalMaterials.set(targetMesh, clonedMaterials)
+      } else {
+        const clonedMaterial = originalMaterial.clone()
+        targetMesh.material = clonedMaterial
+        originalMaterials.set(targetMesh, clonedMaterial)
+      }
+    } else {
+      // If no original exists, store current as original
+      originalMaterials.set(targetMesh, targetMesh.material)
+    }
+  }
+}

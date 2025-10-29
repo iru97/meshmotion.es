@@ -130,6 +130,18 @@ export function useGLTFLoader() {
               type: fileType,
               // For animations, save which character they're associated with
               characterId: fileType === 'animations' ? currentCharacter?.id : undefined,
+
+              // Enhanced metadata (Task 1.5)
+              tags: [],
+              lastModified: Date.now(),
+              size: file.size,
+              originalName: file.name,
+
+              // 3D metadata from analysis
+              vertices: analysis.metadata.vertices,
+              triangles: analysis.metadata.triangles,
+              bones: analysis.skeletonInfo?.bones || [],
+              animations: analysis.metadata.animations,
             })
           } catch (err) {
             console.error('Failed to save file to IndexedDB:', err)

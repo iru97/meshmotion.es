@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 
 export function RightSidebar() {
   const showRightSidebar = useViewerStore((state) => state.showRightSidebar)
+  const comparisonEnabled = useViewerStore((state) => state.comparisonMode.enabled)
   const toggleRightSidebar = useViewerStore((state) => state.toggleRightSidebar)
   const theme = useThemeClasses()
 
@@ -35,7 +36,7 @@ export function RightSidebar() {
   }
 
   return (
-    <div className={cn('fixed top-4 right-4 bottom-52 z-40 w-80 flex flex-col overflow-hidden', theme.glassPanel)}>
+    <div className={cn('fixed top-4 right-4 bottom-52 z-40 w-80 flex flex-col overflow-hidden rounded-xl border border-white/10', theme.glassPanelDark)}>
       {/* Header */}
       <div className={cn('px-6 pt-6 pb-4 border-b', theme.border)}>
         <div className="flex items-center justify-between">
@@ -54,10 +55,13 @@ export function RightSidebar() {
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-        {/* Model Selection */}
+        {/* Model Selection - Disabled in Comparison Mode */}
         <div className="space-y-3">
-          <h3 className={cn('text-xs font-semibold uppercase tracking-wider opacity-60', theme.textPrimary)}>Model & Animation</h3>
-          <div className="space-y-3">
+          <h3 className={cn('text-xs font-semibold uppercase tracking-wider opacity-60', theme.textPrimary)}>
+            Model & Animation
+            {comparisonEnabled && <span className="text-white/40 ml-2">(Use Comparison Panel)</span>}
+          </h3>
+          <div className={cn('space-y-3', comparisonEnabled && 'opacity-50 pointer-events-none')}>
             <CharacterSelector />
             <AnimationSelector />
           </div>

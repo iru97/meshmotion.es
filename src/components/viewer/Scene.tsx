@@ -9,13 +9,19 @@ import { DropZone } from '../upload/DropZone'
 import { AnimationControls } from '../animation/AnimationControls'
 import { RightSidebar } from '../panels/RightSidebar'
 import { LoadingOverlay } from '../ui/LoadingOverlay'
+import { ActionToolbar } from '../panels/ActionToolbar'
+import { AssetsPanel } from '../assets/AssetsPanel'
+import { ComparisonScene } from '../comparison/ComparisonScene'
+import { ComparisonControls } from '../comparison/ComparisonControls'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { environmentPresets } from '@/types/environment'
 import { useDefaultModel } from '@/hooks/use-default-model'
 import { usePersistentStorage } from '@/hooks/use-persistent-storage'
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 
 export default function Scene() {
   const environmentPreset = useViewerStore((state) => state.environmentPreset)
+  const comparisonEnabled = useViewerStore((state) => state.comparisonMode.enabled)
   const config = environmentPresets[environmentPreset]
 
   // Load default model on first render
@@ -24,6 +30,28 @@ export default function Scene() {
   // Load persisted files from IndexedDB
   usePersistentStorage()
 
+  // Global keyboard shortcuts
+  useKeyboardShortcuts()
+
+  // Render comparison mode if enabled
+  if (comparisonEnabled) {
+    return (
+      <>
+        <ComparisonScene />
+
+        {/* Shared UI Components */}
+        <RightSidebar />
+        <AnimationControls />
+        <DropZone />
+        <LoadingOverlay />
+        <ActionToolbar />
+        <AssetsPanel />
+        <ComparisonControls />
+      </>
+    )
+  }
+
+  // Normal single-view mode
   return (
     <div className="canvas-container">
       <Canvas
@@ -78,6 +106,15 @@ export default function Scene() {
 
       {/* Loading Overlay */}
       <LoadingOverlay />
+
+      {/* Action Toolbar (Assets, Comparison, Settings) */}
+      <ActionToolbar />
+
+      {/* Assets Panel */}
+      <AssetsPanel />
+
+      {/* Comparison Controls Panel */}
+      <ComparisonControls />
     </div>
   )
 }

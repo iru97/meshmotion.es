@@ -3,7 +3,7 @@
 import { useRef } from 'react'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
-import { Upload, FolderOpen, Split, Settings } from 'lucide-react'
+import { Upload, FolderOpen, Split, Settings, Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 /**
@@ -16,10 +16,13 @@ export function ActionToolbar() {
   const showRightSidebar = useViewerStore((state) => state.showRightSidebar)
   const assetPanelOpen = useViewerStore((state) => state.assetPanelOpen)
   const comparisonPanelOpen = useViewerStore((state) => state.comparisonPanelOpen)
+  const currentCharacter = useViewerStore((state) => state.currentCharacter)
+  const exportMenuOpen = useViewerStore((state) => state.exportMenuOpen)
 
   const toggleRightSidebar = useViewerStore((state) => state.toggleRightSidebar)
   const toggleAssetPanel = useViewerStore((state) => state.toggleAssetPanel)
   const toggleComparisonPanel = useViewerStore((state) => state.toggleComparisonPanel)
+  const toggleExportMenu = useViewerStore((state) => state.toggleExportMenu)
 
   // Hide toolbar when RightSidebar is open
   if (showRightSidebar) return null
@@ -45,24 +48,12 @@ export function ActionToolbar() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".glb,.gltf"
+        accept=".glb,.gltf,.fbx,.obj,.dae,.stl,.ply,.3ds"
         multiple
         onChange={handleFileChange}
         className="hidden"
       />
 
-      {/* Upload Button */}
-      <button
-        onClick={handleUploadClick}
-        className={cn(
-          'p-3 transition-all duration-200 active:scale-95 rounded-full',
-          theme.glassPanelDark,
-          theme.hover
-        )}
-        title="Upload GLB File"
-      >
-        <Upload className={cn('w-5 h-5', theme.iconPrimary)} />
-      </button>
       {/* Assets Panel Button - Always visible */}
       <button
         onClick={toggleAssetPanel}
@@ -90,6 +81,35 @@ export function ActionToolbar() {
       >
         <Split className={cn('w-5 h-5', theme.iconPrimary)} />
       </button>
+
+      {/* Upload Button */}
+      <button
+        onClick={handleUploadClick}
+        className={cn(
+          'p-3 transition-all duration-200 active:scale-95 rounded-full',
+          theme.glassPanelDark,
+          theme.hover
+        )}
+        title="Upload GLB File"
+      >
+        <Upload className={cn('w-5 h-5', theme.iconPrimary)} />
+      </button>
+
+      {/* Export Button - Only visible when model is loaded */}
+      {currentCharacter && (
+        <button
+          onClick={toggleExportMenu}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover,
+            exportMenuOpen && 'bg-white/20'
+          )}
+          title="Export Model"
+        >
+          <Download className={cn('w-5 h-5', theme.iconPrimary)} />
+        </button>
+      )}
 
       {/* Settings Button - Toggle sidebar */}
       <button

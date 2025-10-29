@@ -64,7 +64,8 @@ export function ComparisonScene() {
       console.log('[ComparisonScene] Controls are now ready!')
       setControlsReady(true)
     }
-  }, [controls1Ref.current, controls2Ref.current, controlsReady])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controlsReady])
 
   // Additional check with delay for cases where refs mount asynchronously
   useEffect(() => {
@@ -75,7 +76,8 @@ export function ComparisonScene() {
       }
     }, 200)
     return () => clearTimeout(timer)
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controlsReady])
 
   // Sync camera controls bidirectionally
   useEffect(() => {

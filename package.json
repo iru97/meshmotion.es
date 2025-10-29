@@ -10,6 +10,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@gltf-transform/core": "^4.2.1",
+    "@gltf-transform/extensions": "^4.2.1",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-label": "^2.1.7",
@@ -24,6 +26,7 @@
     "@react-three/drei": "^10.7.0",
     "@react-three/fiber": "^9.4.0",
     "@react-three/postprocessing": "^3.0.4",
+    "assimpjs": "^0.0.10",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "gsap": "^3.12.0",

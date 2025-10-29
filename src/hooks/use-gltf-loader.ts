@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import * as THREE from 'three'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { analyzeGLB, validateGLBFile } from '@/lib/utils/glb-analyzer'
@@ -7,6 +7,8 @@ import { generateId } from '@/lib/utils'
 import { GLTFLoader } from 'three-stdlib'
 import type { GLTFModel, AnimationClipWithMetadata } from '@/types/viewer'
 import { indexedDBStorage } from '@/lib/storage/indexed-db'
+import { useFormatConverter } from './use-format-converter'
+import type { ConversionProgress } from '@/types/conversion'
 
 export type UploadOption = 'mesh' | 'animations' | 'both'
 
@@ -18,24 +20,67 @@ export function useGLTFLoader() {
   const setIsLoadingModel = useViewerStore((state) => state.setIsLoadingModel)
   const currentCharacter = useViewerStore((state) => state.currentCharacter)
 
+  // Format conversion hook
+  const { detectFormat, convertFile } = useFormatConverter()
+  const [conversionProgress, setConversionProgress] = useState<ConversionProgress | null>(null)
+
   const loadGLBFile = useCallback(
     async (
       file: File,
       uploadOption?: UploadOption,
       skipPersist = false // New parameter to skip saving to IndexedDB
-    ): Promise<{ success: boolean; error?: string; model?: GLTFModel; needsSelection?: boolean; analysis?: any }> => {
+    ): Promise<{ success: boolean; error?: string; model?: GLTFModel; needsSelection?: boolean; analysis?: any; conversionProgress?: ConversionProgress | null }> => {
       // Set loading state
       setIsLoadingModel(true)
 
       try {
+        // Detect file format
+        const detection = await detectFormat(file)
+
+        // If conversion is needed, convert to GLB first
+        let fileToLoad = file
+        if (detection.needsConversion) {
+          if (!detection.canConvert) {
+            setIsLoadingModel(false)
+            return { success: false, error: detection.error || 'Cannot convert this file format' }
+          }
+
+          console.log(`[GLTF Loader] Converting ${detection.format} to GLB...`)
+
+          // Convert file to GLB
+          const conversionResult = await convertFile(file, {
+            preserveAnimations: true,
+            preserveMaterials: true,
+            preserveTextures: true,
+            targetCoordinateSystem: 'y-up',
+            optimizeGeometry: false,
+          })
+
+          if (!conversionResult.success || !conversionResult.data) {
+            setIsLoadingModel(false)
+            return { success: false, error: conversionResult.error || 'Conversion failed' }
+          }
+
+          // Create a new File object from the converted data
+          const glbBlob = conversionResult.data instanceof Blob
+            ? conversionResult.data
+            : new Blob([conversionResult.data], { type: 'model/gltf-binary' })
+
+          fileToLoad = new File([glbBlob], file.name.replace(/\.\w+$/, '.glb'), {
+            type: 'model/gltf-binary',
+          })
+
+          console.log('[GLTF Loader] Conversion successful, loading GLB...')
+        }
+
         // Validate file
-        const validation = validateGLBFile(file)
+        const validation = validateGLBFile(fileToLoad)
         if (!validation.valid) {
           return { success: false, error: validation.error }
         }
 
-        // Analyze file structure
-        const analysis = await analyzeGLB(file)
+        // Analyze file structure (use the converted file if conversion happened)
+        const analysis = await analyzeGLB(fileToLoad)
 
         // Check if user needs to choose import option
         const hasMesh = analysis.metadata.vertices > 0
@@ -51,9 +96,9 @@ export function useGLTFLoader() {
           }
         }
 
-        // Load the actual GLTF
+        // Load the actual GLTF (use converted file if conversion happened)
         const loader = new GLTFLoader()
-        const url = URL.createObjectURL(file)
+        const url = URL.createObjectURL(fileToLoad)
 
         const gltf = await loader.loadAsync(url)
 
@@ -67,9 +112,9 @@ export function useGLTFLoader() {
         // Create model object - only include animations if we're importing them with the mesh
         const model: GLTFModel = {
           id: generateId(),
-          name: file.name,
+          name: file.name, // Keep original filename for display
           url,
-          file,
+          file: fileToLoad, // Use converted file if conversion happened
           gltf,
           scene: gltf.scene,
           animations: (uploadOption === 'mesh') ? [] : gltf.animations, // Empty if mesh-only
@@ -164,10 +209,13 @@ export function useGLTFLoader() {
         setIsLoadingModel(false)
       }
     },
-    [addUploadedCharacter, addUploadedAnimation, setCharacter, setAnimation, setIsLoadingModel, currentCharacter]
+    [addUploadedCharacter, addUploadedAnimation, setCharacter, setAnimation, setIsLoadingModel, currentCharacter, detectFormat, convertFile]
   )
 
-  return { loadGLBFile }
+  return {
+    loadGLBFile,
+    conversionProgress,
+  }
 }
 
 /**

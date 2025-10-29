@@ -13,6 +13,8 @@ import { ActionToolbar } from '../panels/ActionToolbar'
 import { AssetsPanel } from '../assets/AssetsPanel'
 import { ComparisonScene } from '../comparison/ComparisonScene'
 import { ComparisonControls } from '../comparison/ComparisonControls'
+import { ExportFormatMenu } from '../export/ExportFormatMenu'
+import { ExportModal } from '../export/ExportModal'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { environmentPresets } from '@/types/environment'
 import { useDefaultModel } from '@/hooks/use-default-model'
@@ -47,6 +49,8 @@ export default function Scene() {
         <ActionToolbar />
         <AssetsPanel />
         <ComparisonControls />
+        <ExportFormatMenu />
+        <ExportModal />
       </>
     )
   }
@@ -115,6 +119,10 @@ export default function Scene() {
 
       {/* Comparison Controls Panel */}
       <ComparisonControls />
+
+      {/* Export Menu & Modal */}
+      <ExportFormatMenu />
+      <ExportModal />
     </div>
   )
 }

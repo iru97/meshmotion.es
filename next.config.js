@@ -26,6 +26,16 @@ const nextConfig = {
       type: 'asset/resource',
     })
 
+    // Exclude Node.js modules from client bundle (for assimpjs)
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        crypto: false,
+      }
+    }
+
     return config
   },
 }

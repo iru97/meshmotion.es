@@ -45,6 +45,10 @@ interface ViewerState {
   selectedAssets: string[]
   assetFilter: AssetFilter
 
+  // Export
+  exportMenuOpen: boolean
+  selectedExportFormat: string | null
+
   // Actions
   setCharacter: (model: GLTFModel | null) => void
   setAnimation: (clip: THREE.AnimationClip | null) => void
@@ -91,6 +95,10 @@ interface ViewerState {
   toggleAssetSelection: (id: string) => void
   clearAssetSelection: () => void
   updateAssetFilter: (filter: Partial<AssetFilter>) => void
+
+  // Export Actions
+  toggleExportMenu: () => void
+  setSelectedExportFormat: (format: string | null) => void
 }
 
 export const useViewerStore = create<ViewerState>()(
@@ -125,6 +133,10 @@ export const useViewerStore = create<ViewerState>()(
         assetPanelOpen: false,
         selectedAssets: [],
         assetFilter: DEFAULT_ASSET_FILTER,
+
+        // Export
+        exportMenuOpen: false,
+        selectedExportFormat: null,
 
         // Actions
         setCharacter: (model) => set({ currentCharacter: model }),
@@ -357,6 +369,11 @@ export const useViewerStore = create<ViewerState>()(
               ...filter,
             },
           })),
+
+        // Export Actions
+        toggleExportMenu: () =>
+          set((state) => ({ exportMenuOpen: !state.exportMenuOpen })),
+        setSelectedExportFormat: (format) => set({ selectedExportFormat: format }),
       }),
       {
         name: 'viewer-storage',

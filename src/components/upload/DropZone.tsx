@@ -6,21 +6,24 @@ import { useGLTFLoader, UploadOption } from '@/hooks/use-gltf-loader'
 import { Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UploadOptionsDialog } from './UploadOptionsDialog'
+import { ConversionProgress } from './ConversionProgress'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
 import { useViewerStore } from '@/lib/store/viewer-store'
 
 export function DropZone() {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { loadGLBFile } = useGLTFLoader()
+  const { loadGLBFile, conversionProgress } = useGLTFLoader()
   const theme = useThemeClasses()
   const showRightSidebar = useViewerStore((state) => state.showRightSidebar)
 
   const [pendingFile, setPendingFile] = useState<{ file: File; analysis: any } | null>(null)
   const [showOptionsDialog, setShowOptionsDialog] = useState(false)
+  const [currentFileName, setCurrentFileName] = useState<string>('')
 
   const handleFiles = useCallback(
     async (files: File[]) => {
       for (const file of files) {
+        setCurrentFileName(file.name)
         const result = await loadGLBFile(file)
 
         console.log('Upload result:', result)
@@ -29,6 +32,7 @@ export function DropZone() {
           if (result.error) {
             alert(result.error)
           }
+          setCurrentFileName('')
           continue
         }
 
@@ -38,6 +42,8 @@ export function DropZone() {
           setPendingFile({ file, analysis: result.analysis })
           setShowOptionsDialog(true)
         }
+
+        setCurrentFileName('')
       }
     },
     [loadGLBFile]
@@ -136,6 +142,11 @@ export function DropZone() {
           onSelect={handleOptionSelect}
           onCancel={handleCancel}
         />
+      )}
+
+      {/* Conversion Progress */}
+      {conversionProgress && currentFileName && (
+        <ConversionProgress progress={conversionProgress} fileName={currentFileName} />
       )}
     </>
   )

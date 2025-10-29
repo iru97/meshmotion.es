@@ -3,7 +3,7 @@
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
 import { cn } from '@/lib/utils'
-import { Link, Unlink, Columns2, Rows2 } from 'lucide-react'
+import { Link, Unlink, Columns2, Rows2, X } from 'lucide-react'
 import { ViewSelector } from './ViewSelector'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -16,6 +16,7 @@ export function ComparisonControls() {
   const comparisonMode = useViewerStore((state) => state.comparisonMode)
   const comparisonPanelOpen = useViewerStore((state) => state.comparisonPanelOpen)
   const showRightSidebar = useViewerStore((state) => state.showRightSidebar)
+  const toggleComparisonPanel = useViewerStore((state) => state.toggleComparisonPanel)
   const toggleComparisonMode = useViewerStore((state) => state.toggleComparisonMode)
   const toggleSyncPlayback = useViewerStore((state) => state.toggleSyncPlayback)
   const toggleSyncCamera = useViewerStore((state) => state.toggleSyncCamera)
@@ -48,14 +49,28 @@ export function ComparisonControls() {
   return (
     <div
       className={cn(
-        'fixed right-4 top-20 z-40 w-[320px] p-4 rounded-xl',
-        theme.glassPanelDark,
-        'border border-white/10'
+        'fixed top-4 right-4 bottom-52 z-40 w-80 flex flex-col overflow-hidden rounded-xl border border-white/10',
+        theme.glassPanelDark
       )}
     >
-      <h3 className={cn('text-sm font-semibold mb-4', theme.textPrimary)}>
-        Comparison Mode
-      </h3>
+      {/* Header */}
+      <div className={cn('px-6 pt-6 pb-4 border-b', theme.border)}>
+        <div className="flex items-center justify-between">
+          <h2 className={cn('text-lg font-semibold flex items-center gap-2', theme.textPrimary)}>
+            <Columns2 className="w-5 h-5" />
+            Comparison
+          </h2>
+          <button
+            onClick={toggleComparisonPanel}
+            className={cn('p-2 rounded-full transition-colors', theme.hoverSubtle)}
+          >
+            <X className={cn('w-4 h-4', theme.textSecondary)} />
+          </button>
+        </div>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
 
       {/* Enable/Disable Comparison Mode Switch */}
       <div className="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
@@ -169,6 +184,7 @@ export function ComparisonControls() {
           currentCharacter={view2.character}
           currentAnimation={view2.animation}
         />
+      </div>
       </div>
     </div>
   )

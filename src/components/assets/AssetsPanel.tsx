@@ -42,12 +42,12 @@ export function AssetsPanel() {
       {/* Panel */}
       <div
         className={cn(
-          'fixed left-0 top-0 bottom-0 w-[400px] z-50',
+          'fixed left-0 top-0 bottom-0 z-50',
+          'w-full md:w-[400px]',
           'flex flex-col',
           theme.glassPanelDark,
-          'border-r border-white/10',
-          'shadow-2xl',
-          'rounded-l-none' // Remove left rounded borders for side panel
+          'border-r-0 md:border-r border-white/10',
+          'shadow-2xl'
         )}
       >
         {/* Header */}

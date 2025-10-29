@@ -9,10 +9,13 @@ const spaceGrotesk = localFont({
 })
 
 export const metadata: Metadata = {
-  title: '3D Next Viewer - Advanced GLB Animation Viewer',
+  title: 'MeshMotion',
   description:
     'Professional 3D model viewer with animation retargeting, studio lighting, and timeline editing',
   keywords: ['3D viewer', 'GLB', 'animation', 'Mixamo', 'Three.js'],
+  icons: {
+    icon: '/meshmotion.png',
+  },
 }
 
 export default function RootLayout({

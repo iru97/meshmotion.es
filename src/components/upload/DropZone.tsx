@@ -26,7 +26,6 @@ export function DropZone() {
         setCurrentFileName(file.name)
         const result = await loadGLBFile(file)
 
-        console.log('Upload result:', result)
 
         if (!result.success) {
           if (result.error) {
@@ -38,7 +37,6 @@ export function DropZone() {
 
         // If needs selection, show modal
         if (result.needsSelection && result.analysis) {
-          console.log('Showing upload options dialog')
           setPendingFile({ file, analysis: result.analysis })
           setShowOptionsDialog(true)
         }

@@ -39,11 +39,9 @@ export function ComparisonModel({
   // Clone the scene using SkeletonUtils to preserve bone structure for animations
   const clonedScene = useMemo(() => {
     if (!model) {
-      console.log('[ComparisonModel] No model, returning null')
       return null
     }
 
-    console.log('[ComparisonModel] Cloning scene with SkeletonUtils for model:', model.name)
 
     // Use SkeletonUtils.clone instead of scene.clone for animated models
     const cloned = SkeletonUtils.clone(model.scene) as THREE.Group
@@ -57,7 +55,6 @@ export function ComparisonModel({
 
   // Setup animation mixer when cloned scene is ready
   useEffect(() => {
-    console.log('[ComparisonModel] Setting up mixer, clonedScene:', !!clonedScene)
 
     if (!clonedScene) {
       mixerRef.current = null
@@ -68,10 +65,8 @@ export function ComparisonModel({
     // Create mixer on the CLONED scene
     const mixer = new THREE.AnimationMixer(clonedScene)
     mixerRef.current = mixer
-    console.log('[ComparisonModel] Mixer created for cloned scene')
 
     return () => {
-      console.log('[ComparisonModel] Cleaning up mixer')
       mixer.stopAllAction()
       mixerRef.current = null
       actionRef.current = null
@@ -80,7 +75,6 @@ export function ComparisonModel({
 
   // Setup animation action when animation changes
   useEffect(() => {
-    console.log('[ComparisonModel] Animation changed:', animation?.name || 'null', 'mixer:', !!mixerRef.current)
 
     if (!animation || !mixerRef.current) {
       actionRef.current = null
@@ -97,7 +91,6 @@ export function ComparisonModel({
       return
     }
 
-    console.log('[ComparisonModel] Action created:', animation.name, 'duration:', animation.duration)
 
     // Configure action
     action.reset()
@@ -111,7 +104,6 @@ export function ComparisonModel({
       action.paused = true
     }
 
-    console.log('[ComparisonModel] Action configured - isPlaying:', isPlaying, 'loop:', loop, 'speed:', playbackSpeed)
 
     actionRef.current = action
 
@@ -124,7 +116,6 @@ export function ComparisonModel({
 
   // Update playback state
   useEffect(() => {
-    console.log('[ComparisonModel] isPlaying changed:', isPlaying, 'hasAction:', !!actionRef.current)
 
     if (!actionRef.current) {
       console.warn('[ComparisonModel] No action ref, cannot update playback state')
@@ -132,10 +123,8 @@ export function ComparisonModel({
     }
 
     if (isPlaying) {
-      console.log('[ComparisonModel] Setting action.paused = false')
       actionRef.current.paused = false
     } else {
-      console.log('[ComparisonModel] Setting action.paused = true')
       actionRef.current.paused = true
     }
   }, [isPlaying])
@@ -185,7 +174,6 @@ export function ComparisonModel({
       if (actionRef.current && isPlaying) {
         const now = Date.now()
         if (!lastDebugLogRef.current || now - lastDebugLogRef.current > 1000) {
-          console.log('[ComparisonModel] useFrame - mixer updated, action.time:', actionRef.current.time.toFixed(2), 'paused:', actionRef.current.paused)
           lastDebugLogRef.current = now
         }
       }

@@ -44,7 +44,6 @@ export function ComparisonPlayback() {
   const toggleLoop = () => {
     // Toggle loop for both views (would need to add this action to store)
     // For now, this is a placeholder
-    console.log("Toggle loop");
   };
 
   // Determine playing state

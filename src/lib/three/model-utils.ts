@@ -33,7 +33,6 @@ export function normalizeModel(scene: THREE.Group | THREE.Object3D): void {
   // Position bottom of model at y = 0
   scene.position.y = -scaledBox.min.y
 
-  console.log(`Model normalized: originalSize=${maxDim.toFixed(2)}, scale=${scale.toFixed(4)}`)
 }
 
 /**

@@ -107,9 +107,6 @@ export function ExportModal() {
 
       await exportAndDownload(modelToExport, format, exportOptions)
 
-      // Show success message
-      console.log('Export successful!')
-
       // Close modal
       onClose()
     } catch (err) {

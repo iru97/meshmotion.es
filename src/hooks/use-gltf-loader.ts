@@ -45,7 +45,6 @@ export function useGLTFLoader() {
             return { success: false, error: detection.error || 'Cannot convert this file format' }
           }
 
-          console.log(`[GLTF Loader] Converting ${detection.format} to GLB...`)
 
           // Convert file to GLB
           const conversionResult = await convertFile(file, {
@@ -70,7 +69,6 @@ export function useGLTFLoader() {
             type: 'model/gltf-binary',
           })
 
-          console.log('[GLTF Loader] Conversion successful, loading GLB...')
         }
 
         // Validate file

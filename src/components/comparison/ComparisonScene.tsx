@@ -44,12 +44,10 @@ export function ComparisonScene() {
   const syncCamera = comparisonMode?.syncCamera ?? false
 
   // Debug logs
-  console.log('[ComparisonScene] view1:', {
     character: view1.character?.name,
     animation: view1.animation?.name,
     isPlaying: view1.isPlaying,
   })
-  console.log('[ComparisonScene] view2:', {
     character: view2.character?.name,
     animation: view2.animation?.name,
     isPlaying: view2.isPlaying,
@@ -61,7 +59,6 @@ export function ComparisonScene() {
   // Check when controls are ready
   useEffect(() => {
     if (controls1Ref.current && controls2Ref.current && !controlsReady) {
-      console.log('[ComparisonScene] Controls are now ready!')
       setControlsReady(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,7 +68,6 @@ export function ComparisonScene() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (controls1Ref.current && controls2Ref.current && !controlsReady) {
-        console.log('[ComparisonScene] Controls ready after delay')
         setControlsReady(true)
       }
     }, 200)
@@ -81,13 +77,11 @@ export function ComparisonScene() {
 
   // Sync camera controls bidirectionally
   useEffect(() => {
-    console.log('[ComparisonScene] Camera sync effect - syncCamera:', syncCamera, 'controlsReady:', controlsReady)
 
     if (!syncCamera || !controlsReady) return
 
     // Wait for both controls to be ready
     if (!controls1Ref.current || !controls2Ref.current) {
-      console.log('[ComparisonScene] Controls not ready yet, waiting...')
       return
     }
 
@@ -95,7 +89,6 @@ export function ComparisonScene() {
     const controls2 = controls2Ref.current
     let isSyncing = false
 
-    console.log('[ComparisonScene] Setting up camera sync listeners')
 
     const handleChange1 = () => {
       if (!controls1 || !controls2 || isSyncing) return
@@ -121,7 +114,6 @@ export function ComparisonScene() {
     controls2.addEventListener('change', handleChange2)
 
     return () => {
-      console.log('[ComparisonScene] Removing camera sync listeners')
       controls1.removeEventListener('change', handleChange1)
       controls2.removeEventListener('change', handleChange2)
     }

@@ -43,16 +43,6 @@ export function ComparisonScene() {
   const syncPlayback = comparisonMode?.syncPlayback ?? true
   const syncCamera = comparisonMode?.syncCamera ?? false
 
-  // Debug logs
-    character: view1.character?.name,
-    animation: view1.animation?.name,
-    isPlaying: view1.isPlaying,
-  })
-    character: view2.character?.name,
-    animation: view2.animation?.name,
-    isPlaying: view2.isPlaying,
-  })
-
   // Determine if both views are playing (when sync enabled)
   const bothPlaying = syncPlayback && (view1?.isPlaying || view2?.isPlaying)
 
@@ -180,7 +170,7 @@ export function ComparisonScene() {
           </Canvas>
 
           {/* View Label */}
-          <div className="absolute top-2 left-2 px-2 py-1 rounded bg-black/50 text-white text-xs">
+          <div className="absolute top-20 left-2 px-2 py-1 rounded bg-black/50 text-white text-xs">
             View 1
           </div>
         </div>
@@ -237,7 +227,7 @@ export function ComparisonScene() {
           </Canvas>
 
           {/* View Label */}
-          <div className="absolute top-2 left-2 px-2 py-1 rounded bg-black/50 text-white text-xs">
+          <div className="absolute top-20 right-2 px-2 py-1 rounded bg-black/50 text-white text-xs">
             View 2
           </div>
         </div>

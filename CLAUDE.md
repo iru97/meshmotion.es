@@ -15,11 +15,11 @@ Examples:
 - `/plan build a complete testing suite`
 
 The `/plan` command will:
-1. **Analyze** your request (scope, type, complexity)
+1. **Analyze** your request (scope, type, complexity - lightweight, from keywords)
 2. **Ask questions** to validate understanding
-3. **Show** the full orchestration plan (agents, skills, phases)
-4. **Enhance** your prompt with specifics
-5. **Execute** with full progress tracking
+3. **Show** the orchestration plan (which agents, skills, phases)
+4. **Execute** with Task agents doing deep codebase analysis
+5. **Track** progress with TodoWrite, adapting as agents discover specifics
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Master orchestration command. Analyzes ANY request, maps to available capabilities, validates plan with user, enhances prompt, then executes. Use this as the entry point for any task.
+description: Master orchestration command. Analyzes ANY request, maps to available capabilities, validates plan with user, then executes with agents doing deep analysis. Use this as the entry point for any task.
 allowed-tools:
   - Read
   - Glob
@@ -32,6 +32,30 @@ Examples:
 - `/plan research and implement real-time collaboration`
 
 ## How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ PRE-EXECUTION (lightweight, no deep codebase analysis)          │
+├─────────────────────────────────────────────────────────────────┤
+│ 1. Classify request (scope, type, complexity) - from keywords   │
+│ 2. Map to resources (which agents, skills, tools)               │
+│ 3. Validate with user (AskUserQuestion)                         │
+│ 4. Show orchestration plan                                      │
+│ 5. Create requirements summary (from user answers only)         │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ EXECUTION (deep analysis happens here via agents)               │
+├─────────────────────────────────────────────────────────────────┤
+│ 6. Task(Explore) agents find actual files and patterns          │
+│ 7. Task(Plan) agents design architecture based on findings      │
+│ 8. Skills invoke specialized workflows                          │
+│ 9. Implementation informed by agent discoveries                 │
+│ 10. Each phase builds on previous phase findings                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key principle**: Deep codebase analysis is delegated to Task subagents during execution, NOT done upfront. This scales to any codebase size.
 
 ### Phase 1: Request Analysis
 
@@ -208,13 +232,19 @@ Phase 5: Polish
 └── Final verification
 
 ### Task Breakdown
-[TodoWrite items will be created here]
+[TodoWrite items will be created here - high-level until agents discover specifics]
 
-### Enhanced Prompt
-Based on our validation, here's the enhanced version of your request:
+### Requirements Summary
+Based on user validation answers (NOT codebase analysis):
 
-> [Original request enhanced with specific scope, constraints,
-> affected files, patterns to follow, and success criteria]
+> **Original**: [user's request]
+> **Scope**: [confirmed by user]
+> **Focus**: [selected by user]
+> **Constraints**: [selected by user]
+> **Approach**: [selected by user]
+
+Note: Specific files, patterns, and implementation details will be
+discovered by Task(Explore) agents during Phase 1 of execution.
 ```
 
 ### Phase 5: Execute
@@ -296,8 +326,8 @@ User: /plan add the ability to compare models side by side with synced animation
 
 Claude: I'll analyze this request and create an orchestration plan.
 
-## Request Analysis
-- **Scope**: Large (multiple components, store changes, 3D integration)
+## Request Analysis (lightweight, from keywords)
+- **Scope**: Large (keywords: "compare", "side by side", "synced")
 - **Type**: Feature
 - **Complexity**: 4/5 ⭐⭐⭐⭐
 - **Domains**: ui, state, 3d, animation
@@ -318,37 +348,37 @@ User: Thorough
 
 ### Phase Breakdown
 
-**Phase 1: Research & Planning**
-- Task(Explore): Analyze existing Scene.tsx and viewer-store.ts
-- Task(Plan): Design component architecture for comparison view
-- Skill(/feature-planner): Define detailed requirements
+**Phase 1: Discovery (agents do deep analysis)**
+- Task(Explore): Find existing viewer components, store structure, animation handling
+- Task(Explore): Find patterns for multi-canvas setups
+- Task(Plan): Design architecture based on discoveries
 
-**Phase 2: Implementation**
-- Read orchestrator agent prompt for multi-phase coordination guidance
-- Create ComparisonState in viewer-store
-- Create ComparisonScene component with split Canvas
-- Implement animation sync via shared mixer time
-- Add UI controls for sync toggle, layout switch
+**Phase 2: Planning**
+- Skill(/feature-planner): Define detailed requirements with user
+- Read orchestrator agent for coordination patterns
 
-**Phase 3: Quality Assurance**
-- Read code-reviewer agent prompt for review guidance
-- Read threejs-optimizer agent prompt for performance patterns
+**Phase 3: Implementation**
+- Implementation based on Phase 1 discoveries
+- Read code-reviewer agent for quality patterns
+- Read threejs-optimizer agent for performance patterns
+
+**Phase 4: Quality Assurance**
+- Read test-architect agent for testing patterns
 - Performance target: 60fps with two models
 - Run tests and lint checks
 
-**Phase 4: Finalize**
+**Phase 5: Finalize**
 - Skill(/pr-preparation): Prepare pull request
 
-### Enhanced Prompt
-> Implement model comparison feature with side-by-side view and synced
-> animations. Requirements:
-> - Add ComparisonState to viewer-store with view1/view2 state
-> - Create ComparisonScene component with split Canvas
-> - Implement animation sync via shared mixer time
-> - Add UI controls for sync toggle, layout switch
-> - Performance: Target 60fps with two models
-> - Testing: Unit tests for store, integration for sync
-> - Follow existing patterns in Scene.tsx and Model.tsx
+### Requirements Summary (from user answers only)
+> **Original**: "add the ability to compare models side by side with synced animations"
+> **Scope**: Large (confirmed)
+> **Focus**: 3D/Rendering, UI/UX, Performance
+> **Constraints**: Performance critical, Needs testing
+> **Approach**: Thorough
+
+Specific files, component names, and implementation details will be
+discovered by Task(Explore) agents in Phase 1.
 
 Ready to execute?
 ```

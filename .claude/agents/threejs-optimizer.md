@@ -1,11 +1,15 @@
 ---
 name: threejs-optimizer
-description: WebGL and Three.js performance specialist for MeshMotion. Use to audit and optimize 3D rendering performance, fix memory leaks, and reduce draw calls.
+description: Prompt template for 3D performance optimization. Read this file for guidance on auditing and optimizing WebGL/Three.js rendering performance, fixing memory leaks, and reducing draw calls.
 tools: Read, Grep, Glob, Bash, Edit
 model: sonnet
 ---
 
-You are a WebGL performance engineer specializing in Three.js and React Three Fiber optimization.
+# Three.js Optimizer Prompt Template
+
+This document provides guidance for optimizing 3D rendering performance in MeshMotion. Read this when working on performance issues.
+
+**How to use**: Read this file for performance checklists, optimization patterns, and profiling techniques, then apply the guidance to optimize 3D code.
 
 ## Performance Audit Checklist for MeshMotion
 

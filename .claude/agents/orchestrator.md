@@ -1,13 +1,17 @@
 ---
 name: orchestrator
-description: Master orchestrator for complex multi-step tasks. Coordinates other agents and skills, manages task dependencies, and ensures comprehensive completion. Use for large features or multi-system changes.
+description: Prompt template for complex multi-step tasks. Read this file for guidance on coordinating large features, managing task dependencies, and ensuring comprehensive completion.
 tools: Read, Glob, Grep, Bash, Task, AskUserQuestion, TodoWrite
 model: opus
 ---
 
-You are a master orchestrator responsible for coordinating complex development tasks that span multiple systems, require multiple specialized agents, or involve significant architectural decisions.
+# Orchestrator Prompt Template
 
-## When to Use Orchestrator
+This document provides guidance for coordinating complex development tasks. Read this when working on large features or multi-system changes.
+
+**How to use**: Read this file for patterns and workflows, then apply the guidance to your current task. This is NOT auto-spawned - it's a prompt template for reference.
+
+## When to Apply This Guidance
 
 - **Large Features**: Features touching 5+ files or multiple systems
 - **Architectural Changes**: Changes to state management, routing, or core patterns
@@ -70,18 +74,24 @@ Question 2: Constraints
 
 ### Phase 3: Task Delegation
 
-Use `Task` tool to spawn specialized subagents:
+Use `Task` tool with built-in subagent types for parallel work:
 
 ```typescript
-// Example: Spawn agents for parallel work
+// Example: Spawn subagents for parallel exploration/research
 await Promise.all([
-  spawnAgent('code-reviewer', 'Review current implementation'),
-  spawnAgent('test-architect', 'Plan test coverage'),
-  spawnAgent('threejs-optimizer', 'Audit performance baseline'),
+  Task({ subagent_type: 'Explore', prompt: 'Find all files related to animation system' }),
+  Task({ subagent_type: 'general-purpose', prompt: 'Research Three.js performance patterns' }),
+  Task({ subagent_type: 'Plan', prompt: 'Design architecture for new feature' }),
 ]);
 ```
 
-Agent assignment guidelines:
+**Task subagent types:**
+- `Explore`: Fast codebase exploration, finding files, searching code
+- `Plan`: Designing implementation plans, architectural decisions
+- `general-purpose`: Research, multi-step analysis, complex queries
+- `Bash`: Command execution, git operations, terminal tasks
+
+**Agent prompt templates** (read for guidance):
 - `code-reviewer`: After any code changes
 - `test-architect`: When adding features
 - `threejs-optimizer`: For 3D/rendering work

@@ -96,13 +96,14 @@ interface Result<T> { success: boolean; data?: T; error?: string }
 
 ## 📚 Documentation
 
-| Document | Content |
-|----------|---------|
-| @.claude/docs/CAPABILITIES.md | Full capability registry |
-| @.claude/docs/PROMPT_TEMPLATES.md | Prompt enhancement |
-| @.claude/docs/ARCHITECTURE.md | System design |
-| @.claude/docs/CONVENTIONS.md | Code patterns |
-| @.claude/rules/*.md | Coding rules |
+**Always read these for context:**
+
+@.claude/docs/CAPABILITIES.md
+@.claude/docs/PROMPT_TEMPLATES.md
+@.claude/docs/ARCHITECTURE.md
+@.claude/docs/CONVENTIONS.md
+
+**Coding rules are defined in:** `.claude/rules/*.md`
 
 ---
 

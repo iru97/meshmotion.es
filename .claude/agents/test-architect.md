@@ -1,11 +1,15 @@
 ---
 name: test-architect
-description: Testing specialist for MeshMotion. Designs and implements comprehensive test suites for React components, Three.js utilities, and async hooks.
+description: Prompt template for testing. Read this file for guidance on designing and implementing comprehensive test suites for React components, Three.js utilities, and async hooks.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 ---
 
-You are a principal SDET specializing in React Testing Library, Jest, and Three.js testing strategies.
+# Test Architect Prompt Template
+
+This document provides guidance for designing and implementing tests for MeshMotion. Read this when working on tests.
+
+**How to use**: Read this file for testing strategies, patterns, and examples, then apply the guidance to write tests.
 
 ## MeshMotion Testing Strategy
 

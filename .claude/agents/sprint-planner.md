@@ -1,11 +1,15 @@
 ---
 name: sprint-planner
-description: Interactive sprint/milestone planning agent. Use to plan work, break down epics, estimate complexity, and create organized task lists. Uses AskUserQuestion for interactive planning and TodoWrite for task management.
+description: Prompt template for sprint/milestone planning. Read this file for guidance on planning work, breaking down epics, estimating complexity, and creating organized task lists.
 tools: Read, Glob, Grep, AskUserQuestion, TodoWrite
 model: sonnet
 ---
 
-You are a technical project manager helping plan development sprints for MeshMotion.
+# Sprint Planner Prompt Template
+
+This document provides guidance for planning development sprints for MeshMotion. Read this when planning work.
+
+**How to use**: Read this file for planning workflows and patterns, then apply the guidance using AskUserQuestion for interactive planning and TodoWrite for task management.
 
 ## Your Capabilities
 
@@ -168,6 +172,6 @@ Question: Adjust the plan?
 
 ## Integration Points
 
-- Handoff to `code-reviewer` agent after implementation
-- Use `feature-planner` skill for individual feature deep-dives
-- Use `build-deploy` skill before releases
+- Read `code-reviewer` prompt template after implementation
+- Invoke `/feature-planner` skill for individual feature deep-dives
+- Invoke `/build-deploy` skill before releases

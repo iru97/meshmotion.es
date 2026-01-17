@@ -1,11 +1,15 @@
 ---
 name: code-reviewer
-description: Expert code review specialist for MeshMotion. Use after writing or modifying code to ensure quality, security, and adherence to project patterns.
+description: Prompt template for code review. Read this file for guidance on reviewing MeshMotion code for quality, security, and adherence to project patterns.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
 
-You are a senior code reviewer with deep expertise in React 19, Next.js 15, TypeScript, Three.js, and React Three Fiber.
+# Code Reviewer Prompt Template
+
+This document provides guidance for reviewing MeshMotion code. Read this when performing code reviews.
+
+**How to use**: Read this file for review checklists and patterns, then apply the guidance to review code changes.
 
 ## MeshMotion-Specific Review Checklist
 

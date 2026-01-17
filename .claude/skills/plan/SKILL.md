@@ -152,57 +152,60 @@ Generate detailed execution plan:
 - **Type**: [bug-fix/feature/refactor/...]
 - **Complexity**: [1-5] ⭐
 - **Domains**: [ui, state, 3d, ...]
-- **Estimated Duration**: [phases × complexity]
 
 ### Resource Allocation
 
-#### Agents (Total: X)
-| Phase | Agent | Count | Purpose |
-|-------|-------|-------|---------|
-| 1. Research | `threejs-optimizer` | 1 | Baseline performance |
-| 2. Planning | `sprint-planner` | 1 | Task breakdown |
-| 3. Implementation | `orchestrator` | 1 | Coordinate work |
-| 3. Implementation | `code-reviewer` | 3 | Review each component |
-| 4. Testing | `test-architect` | 2 | Unit + integration |
-| 5. Polish | `refactoring-architect` | 1 | Code cleanup |
+#### Task Subagents (parallel work)
+| Phase | Subagent Type | Purpose |
+|-------|---------------|---------|
+| 1. Research | Explore | Find relevant files, patterns |
+| 1. Research | general-purpose | Research best practices |
+| 2. Planning | Plan | Design architecture |
 
-#### Skills
+#### Skills (specialized workflows)
 | Phase | Skill | Purpose |
 |-------|-------|---------|
-| 1. Research | `/dependency-auditor` | Check for updates |
-| 2. Planning | `/feature-planner` | Detailed requirements |
-| 3. Implementation | `/component-generator` | Create components |
-| 4. Testing | `/debug-wizard` | If issues found |
-| 5. Polish | `/pr-preparation` | Final PR |
+| 1. Research | /dependency-auditor | Check for updates |
+| 2. Planning | /feature-planner | Detailed requirements |
+| 3. Implementation | /component-generator | Create components |
+| 4. Testing | /debug-wizard | If issues found |
+| 5. Polish | /pr-preparation | Final PR |
+
+#### Agent Prompts (guidance)
+| Phase | Agent Prompt | Purpose |
+|-------|--------------|---------|
+| 2. Planning | orchestrator | Multi-phase coordination patterns |
+| 3. Implementation | code-reviewer | Quality check guidance |
+| 3. Implementation | threejs-optimizer | 3D performance patterns |
+| 4. Testing | test-architect | Test design patterns |
+| 5. Polish | refactoring-architect | Safe refactoring patterns |
 
 ### Execution Phases
 
-```
-Phase 1: Research (parallel)
-├── threejs-optimizer: Baseline audit
-├── dependency-auditor: Check dependencies
-└── WebSearch: Best practices research
+Phase 1: Research (parallel Tasks)
+├── Task(Explore): Find related files
+├── Task(general-purpose): Research patterns
+└── Skill(/dependency-auditor): If needed
 
 Phase 2: Planning (sequential)
-├── sprint-planner: Break down tasks
-├── feature-planner: Detail each feature
-└── architecture-decision: If needed
+├── Read agent: orchestrator (coordination guidance)
+├── Skill(/feature-planner): Detail each feature
+└── Skill(/architecture-decision): If needed
 
-Phase 3: Implementation (parallel where possible)
-├── orchestrator: Coordinate
-├── [implementation work]
-└── code-reviewer: After each component
+Phase 3: Implementation
+├── Read agent: code-reviewer (quality patterns)
+├── Implementation work with TodoWrite tracking
+└── Read agent: threejs-optimizer (if 3D work)
 
-Phase 4: Testing (sequential)
-├── test-architect: Design tests
-├── [write tests]
-└── debug-wizard: If failures
+Phase 4: Testing
+├── Read agent: test-architect (test patterns)
+├── Write and run tests
+└── Skill(/debug-wizard): If failures
 
-Phase 5: Polish (sequential)
-├── refactoring-architect: Cleanup
-├── pr-preparation: Prepare PR
-└── Final review
-```
+Phase 5: Polish
+├── Read agent: refactoring-architect (cleanup patterns)
+├── Skill(/pr-preparation): Prepare PR
+└── Final verification
 
 ### Task Breakdown
 [TodoWrite items will be created here]
@@ -219,24 +222,40 @@ Based on our validation, here's the enhanced version of your request:
 After validation, execute the plan:
 
 1. Create TodoWrite with all tasks
-2. Spawn agents via Task tool as needed
-3. Track progress through phases
-4. Report results after each phase
-5. Adapt plan if issues arise
+2. Use Task tool for parallel research/exploration
+3. Invoke skills via Skill tool for specialized workflows
+4. Follow agent prompt templates for guidance
+5. Track progress through phases
+6. Report results after each phase
+7. Adapt plan if issues arise
 
 ## Available Resources
 
-### Agents (6)
-| Agent | Best For |
-|-------|----------|
+### Task Tool Subagents (Built-in)
+Use `Task` tool with these `subagent_type` values:
+
+| Type | Best For |
+|------|----------|
+| `Explore` | Fast codebase exploration, find files, search code |
+| `Plan` | Design implementation plans, architectural decisions |
+| `general-purpose` | Research, multi-step analysis, complex queries |
+| `Bash` | Command execution, git operations, terminal tasks |
+
+### Agent Prompt Templates (`.claude/agents/`)
+These provide specialized guidance when working on specific tasks:
+
+| Agent | Read When |
+|-------|-----------|
 | `orchestrator` | Complex multi-phase coordination |
 | `sprint-planner` | Planning & task breakdown |
-| `code-reviewer` | Code quality & patterns |
+| `code-reviewer` | Code quality review |
 | `test-architect` | Test design & implementation |
-| `threejs-optimizer` | 3D performance |
-| `refactoring-architect` | Safe transformations |
+| `threejs-optimizer` | 3D performance work |
+| `refactoring-architect` | Safe refactoring |
 
-### Skills (8)
+**Usage**: Read agent file for specialized prompts and patterns, then apply guidance.
+
+### Skills (User-Invocable via Skill tool)
 | Skill | Best For |
 |-------|----------|
 | `/feature-planner` | Interactive feature planning |
@@ -247,11 +266,13 @@ After validation, execute the plan:
 | `/component-generator` | New components |
 | `/export-debugger` | Export issues |
 | `/build-deploy` | Build & deploy |
+| `/vercel-react-best-practices` | Vercel React patterns |
 
-### Tools
+### Core Tools
 - `Read`, `Glob`, `Grep` - Codebase analysis
 - `Bash` - Commands & checks
-- `Task` - Spawn subagents
+- `Task` - Spawn subagents (built-in types only)
+- `Skill` - Invoke user-invocable skills
 - `AskUserQuestion` - Interactive validation
 - `TodoWrite` - Progress tracking
 - `WebSearch`, `WebFetch` - Research
@@ -295,16 +316,28 @@ User: Thorough
 
 ## Orchestration Plan
 
-### Resource Allocation (12 agents total)
-- 1x sprint-planner (planning)
-- 1x feature-planner (requirements)
-- 1x architecture-decision (state design)
-- 1x threejs-optimizer (baseline + verify)
-- 1x orchestrator (coordination)
-- 3x code-reviewer (after each phase)
-- 2x test-architect (unit + integration)
-- 1x refactoring-architect (cleanup)
-- 1x pr-preparation (final)
+### Phase Breakdown
+
+**Phase 1: Research & Planning**
+- Task(Explore): Analyze existing Scene.tsx and viewer-store.ts
+- Task(Plan): Design component architecture for comparison view
+- Skill(/feature-planner): Define detailed requirements
+
+**Phase 2: Implementation**
+- Read orchestrator agent prompt for multi-phase coordination guidance
+- Create ComparisonState in viewer-store
+- Create ComparisonScene component with split Canvas
+- Implement animation sync via shared mixer time
+- Add UI controls for sync toggle, layout switch
+
+**Phase 3: Quality Assurance**
+- Read code-reviewer agent prompt for review guidance
+- Read threejs-optimizer agent prompt for performance patterns
+- Performance target: 60fps with two models
+- Run tests and lint checks
+
+**Phase 4: Finalize**
+- Skill(/pr-preparation): Prepare pull request
 
 ### Enhanced Prompt
 > Implement model comparison feature with side-by-side view and synced

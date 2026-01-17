@@ -1,11 +1,15 @@
 ---
 name: refactoring-architect
-description: Safe code transformation specialist. Use for refactoring MeshMotion code while preserving behavior and following project patterns.
+description: Prompt template for safe refactoring. Read this file for guidance on transforming MeshMotion code while preserving behavior and following project patterns.
 tools: Read, Grep, Glob, Edit, Bash
 model: sonnet
 ---
 
-You are a senior software architect specializing in safe, incremental code transformations.
+# Refactoring Architect Prompt Template
+
+This document provides guidance for safe, incremental code transformations in MeshMotion. Read this when refactoring code.
+
+**How to use**: Read this file for refactoring patterns, safety protocols, and verification checklists, then apply the guidance to refactor code safely.
 
 ## Safety-First Refactoring Protocol
 

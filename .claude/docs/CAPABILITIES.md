@@ -1,27 +1,48 @@
 # MeshMotion Capability Registry
 
-Complete registry of all available agents, skills, tools, and their optimal use cases.
+Complete registry of all available Task subagents, agent prompts, skills, tools, and their optimal use cases.
+
+## How Resources Work
+
+### Task Subagents (Built-in)
+Use `Task` tool with `subagent_type` parameter:
+- `Explore` - Fast codebase exploration
+- `Plan` - Design implementation plans
+- `general-purpose` - Research, multi-step analysis
+- `Bash` - Command execution
+
+### Agent Prompts (`.claude/agents/`)
+Read these files for specialized guidance - they're prompt templates, not auto-spawned:
+- `orchestrator` - Multi-phase coordination patterns
+- `code-reviewer` - Code quality review guidance
+- `test-architect` - Test design patterns
+- `threejs-optimizer` - 3D performance patterns
+- `refactoring-architect` - Safe refactoring patterns
+- `sprint-planner` - Task breakdown patterns
+
+### Skills (Invoke via Skill tool)
+User-invocable workflows with specialized logic.
 
 ## Capability Matrix
 
 ### Request Type → Recommended Resources
 
-| Request Type | Primary Agent | Supporting Agents | Skills | Tools |
-|--------------|---------------|-------------------|--------|-------|
-| **Bug Fix** | `debug-wizard` | `code-reviewer` | `/debug-wizard` | Grep, Read, Bash |
-| **New Feature** | `orchestrator` | `sprint-planner`, `code-reviewer`, `test-architect` | `/feature-planner`, `/component-generator` | All |
-| **Refactoring** | `refactoring-architect` | `code-reviewer`, `test-architect` | `/architecture-decision` | Read, Edit, Grep |
-| **Performance** | `threejs-optimizer` | `code-reviewer` | `/dependency-auditor` | Bash, Read |
-| **Testing** | `test-architect` | `code-reviewer` | `/debug-wizard` | Bash, Read, Write |
-| **Research** | - | - | `/architecture-decision`, `/dependency-auditor` | WebSearch, WebFetch, Read |
-| **Documentation** | - | - | - | Read, Write, Glob |
-| **Migration** | `orchestrator` | `refactoring-architect`, `test-architect` | `/architecture-decision` | All |
-| **Full Project** | `orchestrator` | ALL | ALL | ALL |
+| Request Type | Task Subagents | Agent Prompts to Read | Skills | Tools |
+|--------------|----------------|----------------------|--------|-------|
+| **Bug Fix** | Explore, general-purpose | `code-reviewer` | `/debug-wizard` | Grep, Read, Bash |
+| **New Feature** | Explore, Plan | `orchestrator`, `code-reviewer`, `test-architect` | `/feature-planner`, `/component-generator` | All |
+| **Refactoring** | Explore, Plan | `refactoring-architect`, `code-reviewer` | `/architecture-decision` | Read, Edit, Grep |
+| **Performance** | Explore, general-purpose | `threejs-optimizer`, `code-reviewer` | `/dependency-auditor` | Bash, Read |
+| **Testing** | Explore | `test-architect`, `code-reviewer` | `/debug-wizard` | Bash, Read, Write |
+| **Research** | general-purpose | - | `/architecture-decision`, `/dependency-auditor` | WebSearch, WebFetch, Read |
+| **Documentation** | Explore | - | - | Read, Write, Glob |
+| **Migration** | Explore, Plan | `orchestrator`, `refactoring-architect` | `/architecture-decision` | All |
+| **Full Project** | All | All | All | All |
 
 ### Domain → Specialized Resources
 
-| Domain | Agents | Skills | Key Files |
-|--------|--------|--------|-----------|
+| Domain | Agent Prompts | Skills | Key Files |
+|--------|---------------|--------|-----------|
 | **UI** | `code-reviewer` | `/component-generator` | `src/components/**` |
 | **State** | `code-reviewer`, `refactoring-architect` | `/architecture-decision` | `src/lib/store/**` |
 | **3D/Rendering** | `threejs-optimizer`, `code-reviewer` | `/export-debugger` | `src/components/viewer/**`, `src/lib/three/**` |
@@ -31,46 +52,45 @@ Complete registry of all available agents, skills, tools, and their optimal use 
 | **Types** | `code-reviewer` | - | `src/types/**` |
 | **Tests** | `test-architect` | `/debug-wizard` | `__tests__/**` |
 
-## Agent Capabilities
+## Agent Prompt Templates
 
 ### orchestrator
 ```yaml
-purpose: Master coordinator for complex multi-phase tasks
+purpose: Prompt template for complex multi-phase coordination
 tools: [Read, Glob, Grep, Bash, Task, AskUserQuestion, TodoWrite]
 model: opus
-spawns: All other agents
-best_for:
+read_when:
   - Large features (5+ files)
   - Multi-system changes
   - Release coordination
   - Recovery from failures
-phases: [Research, Planning, Implementation, Testing, Polish]
+provides: Phase patterns, quality gates, error recovery strategies
 ```
 
 ### sprint-planner
 ```yaml
-purpose: Interactive planning and task breakdown
+purpose: Prompt template for planning and task breakdown
 tools: [Read, Glob, Grep, AskUserQuestion, TodoWrite]
 model: sonnet
-best_for:
+read_when:
   - Milestone planning
   - Epic breakdown
   - Complexity estimation
   - Prioritization
-outputs: [Task lists, Dependency maps, Risk assessments]
+provides: Task lists, Dependency maps, Risk assessments
 ```
 
 ### code-reviewer
 ```yaml
-purpose: MeshMotion-specific code review
+purpose: Prompt template for MeshMotion-specific code review
 tools: [Read, Grep, Glob, Bash]
 model: sonnet
-best_for:
+read_when:
   - After any code changes
   - Pattern compliance
   - Security review
   - Performance review
-checks:
+checks_to_perform:
   - Zustand selector patterns
   - Three.js disposal
   - TypeScript strict compliance
@@ -79,14 +99,14 @@ checks:
 
 ### test-architect
 ```yaml
-purpose: Test design and implementation
+purpose: Prompt template for test design and implementation
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 model: sonnet
-best_for:
+read_when:
   - Test suite design
   - Coverage improvement
   - Test debugging
-patterns:
+patterns_provided:
   - React Testing Library
   - Jest mocking
   - Three.js test mocks
@@ -95,15 +115,15 @@ coverage_target: 80%
 
 ### threejs-optimizer
 ```yaml
-purpose: WebGL and Three.js performance
+purpose: Prompt template for WebGL and Three.js performance
 tools: [Read, Grep, Glob, Bash, Edit]
 model: sonnet
-best_for:
+read_when:
   - Performance audits
   - Memory leak detection
   - Draw call optimization
   - Animation performance
-metrics:
+targets_provided:
   - Draw calls (<100)
   - FPS (60+)
   - Memory usage
@@ -112,15 +132,15 @@ metrics:
 
 ### refactoring-architect
 ```yaml
-purpose: Safe code transformations
+purpose: Prompt template for safe code transformations
 tools: [Read, Grep, Glob, Edit, Bash]
 model: sonnet
-best_for:
+read_when:
   - Extract component/hook
   - Consolidate patterns
   - Type improvements
   - Dead code removal
-safety:
+safety_patterns:
   - Tests must pass
   - Small incremental changes
   - Rollback strategy
@@ -174,70 +194,73 @@ safety:
 
 ## Orchestration Patterns
 
-### Pattern: Quick Fix (1-3 agents)
+### Pattern: Quick Fix
 ```
-1. code-reviewer (identify issue)
-2. [fix]
-3. code-reviewer (verify fix)
-```
-
-### Pattern: New Component (3-5 agents)
-```
-1. feature-planner (requirements)
-2. component-generator (create)
-3. code-reviewer (review)
-4. test-architect (test)
-5. pr-preparation (PR)
+1. Task(Explore): Find relevant code
+2. Read agent: code-reviewer (review guidance)
+3. [fix]
+4. Verify: tests pass, lint clean
 ```
 
-### Pattern: Performance Work (4-6 agents)
+### Pattern: New Component
 ```
-1. threejs-optimizer (baseline)
-2. [optimization work]
-3. threejs-optimizer (verify)
-4. code-reviewer (review)
-5. test-architect (regression tests)
-```
-
-### Pattern: Large Feature (8-15 agents)
-```
-1. sprint-planner (breakdown)
-2. feature-planner (each feature)
-3. architecture-decision (if needed)
-4. orchestrator (coordinate)
-5. [implementation] + code-reviewer (per component)
-6. test-architect (tests)
-7. threejs-optimizer (if 3D)
-8. refactoring-architect (cleanup)
-9. pr-preparation (PR)
+1. Skill(/feature-planner): Define requirements
+2. Skill(/component-generator): Create files
+3. Read agent: code-reviewer (review guidance)
+4. Read agent: test-architect (test guidance)
+5. Skill(/pr-preparation): Final PR
 ```
 
-### Pattern: Epic/Project (15-30+ agents)
+### Pattern: Performance Work
+```
+1. Task(Explore): Find 3D/rendering code
+2. Read agent: threejs-optimizer (baseline patterns)
+3. [optimization work]
+4. Read agent: threejs-optimizer (verify patterns)
+5. Read agent: code-reviewer (review)
+6. Run tests to check for regressions
+```
+
+### Pattern: Large Feature
+```
+1. Read agent: sprint-planner (breakdown patterns)
+2. Skill(/feature-planner): Detail each feature
+3. Skill(/architecture-decision): If needed
+4. Read agent: orchestrator (coordination patterns)
+5. Task(Plan): Design architecture
+6. [implementation with TodoWrite tracking]
+7. Read agent: code-reviewer (per component)
+8. Read agent: test-architect (tests)
+9. Read agent: threejs-optimizer (if 3D)
+10. Skill(/pr-preparation): Final PR
+```
+
+### Pattern: Epic/Project
 ```
 Phase 1: Research
-├── dependency-auditor
-├── WebSearch research
-└── architecture-decision (×N)
+├── Task(general-purpose): Research best practices
+├── Skill(/dependency-auditor): Check dependencies
+└── Skill(/architecture-decision): ×N as needed
 
 Phase 2: Planning
-├── sprint-planner
-├── feature-planner (×N)
-└── orchestrator (master plan)
+├── Read agent: sprint-planner (breakdown patterns)
+├── Skill(/feature-planner): ×N per feature
+└── Read agent: orchestrator (master coordination)
 
-Phase 3: Implementation (parallel tracks)
-├── Track A: [features] + code-reviewer
-├── Track B: [features] + code-reviewer
-└── Track C: [features] + code-reviewer
+Phase 3: Implementation (TodoWrite tracking)
+├── Task(Explore): Find relevant code
+├── [implementation work]
+└── Read agent: code-reviewer (per component)
 
 Phase 4: Integration
-├── orchestrator (coordinate)
-├── test-architect (integration)
-└── threejs-optimizer (performance)
+├── Read agent: test-architect (integration tests)
+├── Read agent: threejs-optimizer (if 3D)
+└── Run full test suite
 
 Phase 5: Polish
-├── refactoring-architect
-├── test-architect (coverage)
-└── pr-preparation
+├── Read agent: refactoring-architect (cleanup)
+├── Skill(/pr-preparation): Final PR
+└── Final verification
 ```
 
 ## Complexity Estimation
@@ -258,15 +281,17 @@ function selectResources(request: Request): Resources {
 
   // Start with base resources
   const resources: Resources = {
-    agents: [],
-    skills: [],
+    taskSubagents: ['Explore'],  // Always useful for finding code
+    agentPromptsToRead: [],       // Prompt templates to read
+    skills: [],                   // Skills to invoke
     tools: ['Read', 'Glob', 'Grep'],
   };
 
   // Add by scope
   if (analysis.scope >= 'large') {
-    resources.agents.push('orchestrator');
-    resources.agents.push('sprint-planner');
+    resources.agentPromptsToRead.push('orchestrator');
+    resources.agentPromptsToRead.push('sprint-planner');
+    resources.taskSubagents.push('Plan');
   }
 
   // Add by type
@@ -276,28 +301,29 @@ function selectResources(request: Request): Resources {
       break;
     case 'feature':
       resources.skills.push('/feature-planner');
-      resources.agents.push('test-architect');
+      resources.agentPromptsToRead.push('test-architect');
       break;
     case 'refactor':
-      resources.agents.push('refactoring-architect');
+      resources.agentPromptsToRead.push('refactoring-architect');
       break;
     case 'research':
       resources.tools.push('WebSearch', 'WebFetch');
+      resources.taskSubagents.push('general-purpose');
       resources.skills.push('/architecture-decision');
       break;
   }
 
   // Add by domain
   if (analysis.domains.includes('3d')) {
-    resources.agents.push('threejs-optimizer');
+    resources.agentPromptsToRead.push('threejs-optimizer');
   }
   if (analysis.domains.includes('ui')) {
     resources.skills.push('/component-generator');
   }
 
-  // Always add code-reviewer for any code changes
+  // Always read code-reviewer for any code changes
   if (analysis.type !== 'research') {
-    resources.agents.push('code-reviewer');
+    resources.agentPromptsToRead.push('code-reviewer');
   }
 
   // Add PR preparation for anything > small

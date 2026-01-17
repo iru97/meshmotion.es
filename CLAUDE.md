@@ -76,55 +76,85 @@ interface Result<T> {
 }
 ```
 
-### Resource Cleanup - ALWAYS Dispose Three.js Objects
-```typescript
-useEffect(() => {
-  const geometry = new THREE.BoxGeometry()
-  return () => geometry.dispose()
-}, [])
-```
-
 ## Key Files
 
 - `src/lib/store/viewer-store.ts` - All application state
 - `src/components/viewer/Scene.tsx` - Main 3D canvas
-- `src/components/viewer/Model.tsx` - Model rendering & animation
 - `src/lib/conversion/three-exporters.ts` - Export to GLB/GLTF/OBJ/STL
 - `src/hooks/use-gltf-loader.ts` - Model loading & conversion
 
 ## Constraints
 
-- **Max file size**: 50MB (52428800 bytes)
-- **Static export only**: No server-side features in production
-- **Client-side 3D**: All Three.js components use `'use client'` + `ssr: false`
+- **Max file size**: 50MB
+- **Static export only**: No server-side features
+- **Client-side 3D**: Use `'use client'` + `ssr: false`
 
-## Custom Agents (invoke with name)
+---
 
-| Agent | Purpose |
-|-------|---------|
-| `code-reviewer` | Review code for quality & project patterns |
-| `test-architect` | Design & implement test suites |
-| `threejs-optimizer` | Audit & optimize 3D performance |
-| `refactoring-architect` | Safe code transformations |
+## 🤖 Intelligent Assistance
 
-## Skills (invoke with /skillname)
+### Interactive Skills (use AskUserQuestion)
+
+| Skill | Purpose | Tools Used |
+|-------|---------|------------|
+| `/feature-planner` | Interactive feature planning wizard | AskUserQuestion, TodoWrite, Read |
+| `/debug-wizard` | Guided debugging with decision trees | AskUserQuestion, TodoWrite, Bash |
+| `/architecture-decision` | Create ADRs with guided questions | AskUserQuestion, WebSearch, Write |
+| `/pr-preparation` | Complete PR workflow with checks | AskUserQuestion, TodoWrite, Bash |
+| `/dependency-auditor` | Security & update audit | WebSearch, WebFetch, Bash |
+
+### Specialized Agents
+
+| Agent | Purpose | Best For |
+|-------|---------|----------|
+| `orchestrator` | Master coordinator for complex tasks | Large features, multi-system changes |
+| `sprint-planner` | Interactive sprint/milestone planning | Task breakdown, prioritization |
+| `code-reviewer` | MeshMotion-specific code review | After any code changes |
+| `test-architect` | Test design & implementation | Adding test coverage |
+| `threejs-optimizer` | WebGL performance audit | 3D rendering issues |
+| `refactoring-architect` | Safe code transformations | Structural changes |
+
+### Utility Skills
 
 | Skill | Purpose |
 |-------|---------|
-| `/component-generator` | Generate components matching project patterns |
+| `/component-generator` | Generate components matching patterns |
 | `/export-debugger` | Debug 3D model export issues |
 | `/build-deploy` | Build & deployment assistance |
 
-## Detailed Documentation
+---
 
-For implementation details, see:
-- @.claude/rules/react.md - React patterns & hooks
-- @.claude/rules/nextjs.md - Next.js 15 App Router
-- @.claude/rules/threejs.md - Three.js & R3F rules
-- @.claude/rules/typescript.md - TypeScript strict mode
-- @.claude/rules/performance.md - Vercel performance rules
-- @.claude/rules/styling.md - Tailwind & shadcn/ui
-- @.claude/rules/zustand.md - State management
+## 🔧 Automated Assistance
+
+### Session Start
+When a session begins, I automatically:
+- Check git status and recent commits
+- Scan for TypeScript errors
+- Count outstanding TODOs
+- Report project health
+
+### Code Quality Hooks
+- **PreToolUse**: Block dangerous commands, validate edits
+- **PostToolUse**: Auto-format TypeScript/CSS files
+- Protected files: `.env`, lock files, `.git/`
+
+---
+
+## 📚 Detailed Documentation
+
+| Document | Content |
+|----------|---------|
+| @.claude/docs/ARCHITECTURE.md | Data flow, state, component tree |
+| @.claude/docs/CONVENTIONS.md | Naming, patterns, code style |
+| @.claude/rules/react.md | React patterns & hooks |
+| @.claude/rules/nextjs.md | Next.js 15 App Router |
+| @.claude/rules/threejs.md | Three.js & R3F rules |
+| @.claude/rules/typescript.md | TypeScript strict mode |
+| @.claude/rules/performance.md | Vercel 40+ performance rules |
+| @.claude/rules/styling.md | Tailwind & shadcn/ui |
+| @.claude/rules/zustand.md | State management |
+
+---
 
 ## Path Aliases
 

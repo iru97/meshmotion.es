@@ -148,11 +148,19 @@ safety_patterns:
 
 ## Skill Capabilities
 
+### Master Commands
+
+| Skill | Philosophy | Best For |
+|-------|------------|----------|
+| `/plan` | Analyze → Validate → Execute with agents | Complex features, ambiguous requirements, research |
+| `/plan-loop-implementation` | Questions → Loop until done (Ralph Wiggum) | Batch work, migrations, clear success criteria |
+
 ### Interactive Skills (AskUserQuestion)
 
 | Skill | Questions Asked | Outputs |
 |-------|-----------------|---------|
 | `/plan` | Scope, Focus, Constraints, Approach | Full orchestration plan |
+| `/plan-loop-implementation` | Scope, Success criteria, Constraints | TodoWrite loop until all pass |
 | `/feature-planner` | Type, Scope, Impact, Testing | Task breakdown, Requirements |
 | `/debug-wizard` | Category, Reproducibility, Details | Diagnostic checklist, Solutions |
 | `/architecture-decision` | Type, Urgency, Options | ADR document |

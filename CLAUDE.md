@@ -1,18 +1,33 @@
 # MeshMotion - Professional 3D Model Viewer
 
-## 🚀 Start Here: `/plan`
+## 🚀 Start Here: `/plan` or `/plan-loop-implementation`
 
-**For ANY request, use `/plan`**. It analyzes, validates, and orchestrates.
+**For ANY request, start with `/plan`**. It analyzes, validates, and orchestrates.
 
 ```
 /plan [your request in natural language]
 ```
 
+**For batch work with clear criteria, use `/plan-loop-implementation`**. It loops until done.
+
+```
+/plan-loop-implementation [your implementation request]
+```
+
+### When to Use Which
+
+| Use `/plan` | Use `/plan-loop-implementation` |
+|-------------|--------------------------------|
+| Complex features needing design | Clear, well-defined tasks |
+| Ambiguous requirements | Batch migrations/refactors |
+| Research-heavy tasks | Adding test coverage |
+| Architectural decisions | "Do X to all files matching Y" |
+
 Examples:
 - `/plan fix the animation freezing bug`
 - `/plan add screenshot export feature`
-- `/plan refactor the entire export system`
-- `/plan build a complete testing suite`
+- `/plan-loop-implementation migrate all components to new Button API`
+- `/plan-loop-implementation add tests for all export hooks`
 
 The `/plan` command will:
 1. **Analyze** your request (scope, type, complexity - lightweight, from keywords)
@@ -53,10 +68,11 @@ interface Result<T> { success: boolean; data?: T; error?: string }
 
 ## 🤖 Full Capability Set
 
-### Master Command
+### Master Commands
 | Command | Purpose |
 |---------|---------|
-| `/plan` | **Primary entry point** - analyzes any request and orchestrates |
+| `/plan` | **Primary entry point** - analyzes, validates, then executes with agents |
+| `/plan-loop-implementation` | **Ralph Wiggum loop** - gathers requirements, then loops until done |
 
 ### Interactive Skills
 | Skill | Purpose |

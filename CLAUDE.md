@@ -14,6 +14,8 @@
 /plan-loop-implementation [your implementation request]
 ```
 
+**Key feature**: State persists in `.claude/loop-state.md`. When context runs out, just say `continue` and Claude picks up where it left off WITHOUT re-asking questions.
+
 ### When to Use Which
 
 | Use `/plan` | Use `/plan-loop-implementation` |

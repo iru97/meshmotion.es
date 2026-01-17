@@ -16,46 +16,87 @@ allowed-tools:
 user-invocable: true
 ---
 
-# /plan-loop-implementation - Persistent Loop Implementation
+# /plan-loop-implementation - Ralph Wiggum Loop
 
-Inspired by Geoffrey Huntley's Ralph Wiggum technique. **Gathers requirements ONCE, then loops until ALL tasks complete** - even across multiple Claude sessions.
+Real implementation of Geoffrey Huntley's Ralph Wiggum technique using an **external bash loop**.
 
-## How It Actually Works (Not Just Theory)
+## How It ACTUALLY Works
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ ON INVOCATION: Check for existing loop state                    │
+│ EXTERNAL BASH SCRIPT (.claude/loop.sh)                          │
 ├─────────────────────────────────────────────────────────────────┤
-│ Read .claude/loop-state.md                                      │
-│                                                                 │
-│ EXISTS with pending tasks? → CONTINUE from where we left off    │
-│ DOESN'T EXIST?            → START FRESH (gather requirements)   │
+│ for i in 1..N; do                                               │
+│   claude -p "$(cat PROMPT_loop.md)"                             │
+│   if output contains "<loop-complete>"; then exit 0; fi         │
+│ done                                                            │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ EACH ITERATION (Claude runs, does ONE task, exits)              │
+├─────────────────────────────────────────────────────────────────┤
+│ 1. Read .claude/loop-state.md                                   │
+│ 2. Find first uncompleted task                                  │
+│ 3. Orient → Implement → Validate                                │
+│ 4. Update state file, commit                                    │
+│ 5. Exit (bash loop restarts Claude)                             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**This is the key**: State persists on disk, so you can continue across sessions.
+**Key insight**: Claude doesn't maintain the loop - the BASH SCRIPT does. Claude just does ONE task per invocation. Fresh context each time.
 
-## User Workflow
+## Usage
+
+### Start a New Loop
 
 ```bash
-# Start the loop
-/plan-loop-implementation add tests for all export hooks
-
-# [Claude asks questions, creates state file, starts implementing]
-# [After some tasks, context gets long or you need to pause]
-
-# Continue anytime - just say:
-continue
-
-# Or re-invoke:
-/plan-loop-implementation
-
-# [Claude reads state file, sees pending tasks, continues WITHOUT re-asking questions]
+# From project root
+.claude/loop.sh 50 "add tests for all export hooks"
 ```
 
-## State File Format
+This will:
+1. Create `.claude/loop-state.md` with the goal
+2. First iteration: Claude asks requirements, creates task breakdown
+3. Subsequent iterations: Claude completes ONE task each
+4. Loop until all tasks complete or max iterations reached
 
-Location: `.claude/loop-state.md`
+### Resume an Existing Loop
+
+```bash
+# If loop was interrupted or hit max iterations
+.claude/loop.sh 30
+```
+
+Claude reads the existing state file and continues from where it left off.
+
+### From Claude Code (Interactive)
+
+If you invoke this skill interactively:
+
+```
+/plan-loop-implementation add tests for all export hooks
+```
+
+Claude will:
+1. Check if `.claude/loop-state.md` exists
+2. If YES: Continue from current state (one task)
+3. If NO: Gather requirements, create state, do first task
+
+Then tell you to run the bash loop for autonomous execution:
+```
+To run autonomously: .claude/loop.sh 50
+```
+
+## Files
+
+| File | Purpose |
+|------|---------|
+| `.claude/loop.sh` | External bash loop script |
+| `.claude/PROMPT_loop.md` | Prompt fed to Claude each iteration |
+| `.claude/loop-state.md` | Persistent state (tasks, progress) |
+| `.claude/loop-progress.log` | Log of all iterations |
+
+## State File Format
 
 ```markdown
 # Loop Implementation State
@@ -65,324 +106,152 @@ Location: `.claude/loop-state.md`
 ## Original Request
 > add tests for all export hooks
 
-## Requirements (gathered once)
+## Requirements
 - Scope: Related set of changes
 - Success Criteria: All tests pass, No TypeScript errors
 - Constraints: Follow existing patterns, Commit after each task
 
 ## Tasks
-- [x] [1/5] Create test file for useFormatExporter
+- [x] [1/5] Create test file structure
 - [x] [2/5] Write tests for GLB export
-- [ ] [3/5] Write tests for GLTF export        ← CURRENT
+- [ ] [3/5] Write tests for GLTF export   ← CURRENT
 - [ ] [4/5] Write tests for OBJ export
 - [ ] [5/5] Add integration tests
 
 ## Progress Log
-- 2024-01-15 14:30: Started loop
+- 2024-01-15 14:30: Loop started
 - 2024-01-15 14:35: Task 1 complete (commit: abc123)
 - 2024-01-15 14:42: Task 2 complete (commit: def456)
-- 2024-01-15 14:50: Paused (context limit)
-- 2024-01-15 15:00: Resumed
 ```
 
-## Execution Flow
+## Signals
 
-### Step 1: Check State (ALWAYS FIRST)
+Claude outputs these for the bash loop to detect:
 
-```typescript
-// FIRST THING ON INVOCATION
-const stateFile = await Read('.claude/loop-state.md');
+| Signal | Meaning | Bash Action |
+|--------|---------|-------------|
+| `<loop-complete>` | All tasks done, validated | Exit 0 (success) |
+| `<loop-abort>` | Fatal error, stop loop | Exit 1 (failure) |
+| `<loop-stuck>` | Needs human help | Exit 2 (intervention needed) |
 
-if (stateFile.exists && stateFile.status === 'IN_PROGRESS') {
-  // CONTINUE MODE - don't ask questions again!
-  const pendingTasks = stateFile.tasks.filter(t => !t.completed);
-  if (pendingTasks.length > 0) {
-    continueFromTask(pendingTasks[0]);
-  } else {
-    completeLoop();
-  }
-} else {
-  // START FRESH - gather requirements
-  gatherRequirements();
-}
-```
+## Session Compaction Handling
 
-### Step 2: Gather Requirements (only if starting fresh)
+When Claude's context is compacted:
+1. **State file persists** - All progress is in `.claude/loop-state.md`
+2. **PROMPT_loop.md instructs** - "First, read state file"
+3. **Fresh context is fine** - Each iteration is independent
 
-Use `AskUserQuestion` ONCE:
+This is WHY the external loop works:
+- Claude doesn't need to remember anything
+- State is on disk
+- Bash loop provides continuity
 
-```
-Question 1: What to implement?
-- Header: "Scope"
-- Options:
-  - "Single component/hook"
-  - "Related set of changes"
-  - "System-wide migration"
+## Example Full Run
 
-Question 2: When is it done?
-- Header: "Done when"
-- multiSelect: true
-- Options:
-  - "All tests pass"
-  - "No TypeScript errors"
-  - "No lint warnings"
-  - "Feature works as described"
-
-Question 3: Constraints?
-- Header: "Constraints"
-- multiSelect: true
-- Options:
-  - "Don't break existing functionality"
-  - "Follow existing patterns"
-  - "Commit after each task"
-```
-
-### Step 3: Create State File & Task List
-
-```markdown
-# Loop Implementation State
-
-## Status: IN_PROGRESS
-
-## Original Request
-> [user's request]
-
-## Requirements
-- Scope: [from question 1]
-- Success Criteria: [from question 2]
-- Constraints: [from question 3]
-
-## Tasks
-- [ ] [1/N] First task
-- [ ] [2/N] Second task
-...
-
-## Progress Log
-- [timestamp]: Started loop
-```
-
-### Step 4: Implementation Loop
-
-For EACH task:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ ORIENT                                                          │
-│ • Task(Explore): Find relevant files for THIS task              │
-│ • Read existing code - NEVER assume something doesn't exist     │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ IMPLEMENT                                                       │
-│ • Make changes for THIS TASK ONLY                               │
-│ • Small, focused edits                                          │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ VALIDATE                                                        │
-│ • npm run type-check                                            │
-│ • npm run lint                                                  │
-│ • npm run test (if applicable)                                  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ VALIDATION PASSED?                                              │
-│                                                                 │
-│ NO  → Fix issues, re-validate (stay on same task)               │
-│ YES → Update state file, commit, continue to next task          │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Step 5: Update State After Each Task
-
-After successful validation:
-
-1. **Update state file**:
-   ```markdown
-   - [x] [3/5] Write tests for GLTF export  ← Mark complete
-   - [ ] [4/5] Write tests for OBJ export   ← Now current
-   ```
-
-2. **Add to progress log**:
-   ```markdown
-   - 2024-01-15 14:50: Task 3 complete (commit: ghi789)
-   ```
-
-3. **Commit**:
-   ```bash
-   git add -A && git commit -m "feat: [task description]"
-   ```
-
-4. **Update TodoWrite** for UI visibility
-
-### Step 6: Completion
-
-When all tasks are done:
-
-1. **Update state file**:
-   ```markdown
-   ## Status: COMPLETE
-   ```
-
-2. **Final validation**: Run full test suite
-
-3. **Summary**: List all commits made
-
-4. **Cleanup option**: Ask if user wants to delete state file
-
-## Critical Rules
-
-### 1. ALWAYS Check State First
-```
-// WRONG: Start asking questions immediately
-"Let me gather requirements..."
-
-// RIGHT: Check state file first
-Read('.claude/loop-state.md') → Continue if exists, else gather requirements
-```
-
-### 2. NEVER Re-Ask Questions on Continue
-```
-// WRONG: Ask questions again when user says "continue"
-"What would you like to implement?"
-
-// RIGHT: Read state file, continue from pending task
-"Continuing from task 3/5: Write tests for GLTF export..."
-```
-
-### 3. Update State File After EVERY Task
-```
-// WRONG: Only update at the end
-// If context runs out, progress is lost!
-
-// RIGHT: Update state file immediately after each task completes
-```
-
-### 4. Commit After Each Task
 ```bash
-# Each successful task = one commit
-# Easy to rollback if needed
-# Progress is preserved in git history
-```
+$ .claude/loop.sh 50 "add comprehensive tests for export functionality"
 
-## Example Session
+==========================================
+=== Iteration 1 of 50 ===
+==========================================
 
-```
-User: /plan-loop-implementation add tests for all export hooks
-
-Claude: I'll check for existing loop state...
-        No existing state found. Let me gather requirements.
+Reading state file...
+First iteration - gathering requirements.
 
 [AskUserQuestion: Scope?]
-User: Related set of changes
+> Related set of changes
 
-[AskUserQuestion: Done when?]
-User: [selects] All tests pass, No TypeScript errors
+[AskUserQuestion: Success criteria?]
+> All tests pass, No TypeScript errors
 
-[AskUserQuestion: Constraints?]
-User: [selects] Follow existing patterns, Commit after each task
+Creating task breakdown...
+5 tasks created. State file updated.
 
-Claude: Creating loop state and task breakdown...
+==========================================
+=== Iteration 2 of 50 ===
+==========================================
 
-## Loop State Created
+Reading state file...
+Task 1/5: Create test file structure
 
-Tasks:
-1. [ ] Create test file for useFormatExporter
-2. [ ] Write tests for GLB export
-3. [ ] Write tests for GLTF export
-4. [ ] Write tests for OBJ export
-5. [ ] Add integration tests
+EXPLORE: Finding existing test patterns...
+IMPLEMENT: Creating __tests__ directory structure...
+VALIDATE: npm run type-check ✓
+COMMIT: test: create export test structure (abc123)
 
-Starting implementation loop...
+State updated. 1/5 complete.
 
----
+==========================================
+=== Iteration 3 of 50 ===
+==========================================
 
-### Task 1/5: Create test file for useFormatExporter
+[... continues until all tasks complete ...]
 
-**ORIENT**
-Task(Explore): Finding existing test patterns...
-Found: src/hooks/__tests__/use-gltf-loader.test.ts
+==========================================
+=== Iteration 8 of 50 ===
+==========================================
 
-**IMPLEMENT**
-Creating src/hooks/__tests__/use-format-exporter.test.ts...
+Reading state file...
+All tasks complete [x]. Running final validation...
 
-**VALIDATE**
-$ npm run type-check → ✓
-$ npm run lint → ✓
-$ npm run test → ✓
+$ npm run type-check ✓
+$ npm run lint ✓
+$ npm run test ✓
 
-**COMMIT**
-$ git commit -m "test: add test file for useFormatExporter"
+<loop-complete>
 
-Updating state file... Task 1/5 complete.
-
----
-
-### Task 2/5: Write tests for GLB export
-
-**ORIENT**
-Task(Explore): Finding GLB export implementation...
-[continues...]
-
----
-
-[After task 3, context is getting long]
-
-Claude: Progress saved. 3/5 tasks complete.
-
-To continue, just say "continue" or invoke /plan-loop-implementation
-
----
-
-User: continue
-
-Claude: Checking loop state...
-        Found: 3/5 tasks complete, continuing from task 4.
-
-### Task 4/5: Write tests for OBJ export
-
-[continues without re-asking questions]
+==========================================
+LOOP COMPLETE!
+Finished after 8 iterations.
+==========================================
 ```
 
-## Escape Hatches
+## When to Use
 
-### Abort the Loop
-```
-User: abort loop
-Claude: [Updates state to ABORTED, shows progress summary]
-```
+| Use This | Use `/plan` Instead |
+|----------|---------------------|
+| Clear, mechanical tasks | Ambiguous requirements |
+| Batch operations | Need to figure out WHAT to do |
+| "Do X to all files" | Research needed |
+| Adding test coverage | Architectural decisions |
+| Migrations/refactors | Complex design work |
 
-### Reset and Start Over
-```
-User: reset loop
-Claude: [Deletes state file, ready for fresh start]
-```
+## Combining with /plan
 
-### Check Status
-```
-User: loop status
-Claude: [Reads state file, shows current progress]
-```
+```bash
+# First, use /plan to figure out WHAT to do
+/plan design the new export system
 
-## When to Use This vs /plan
-
-| `/plan` | `/plan-loop-implementation` |
-|---------|----------------------------|
-| Need to figure out WHAT to do | Already know WHAT, need to DO it |
-| Complex design decisions | Clear, mechanical tasks |
-| Research required | Implementation focused |
-| Might need to pivot | Straight-line execution |
-
-**Combine them:**
-```
-/plan design the new animation system
-[After design is clear]
-/plan-loop-implementation implement the animation system per the design
+# After design is clear, use loop for execution
+.claude/loop.sh 100 "implement the export system per the design in ARCHITECTURE.md"
 ```
 
-## State File Location
+## Troubleshooting
 
-`.claude/loop-state.md` - tracked in git so you can:
-- See history of loops
-- Resume on different machines
-- Share progress with team
+### Loop Stuck
+```bash
+$ .claude/loop.sh 30
+# ... iterations ...
+<loop-stuck>
+LOOP STUCK - needs human intervention.
+```
+
+Check `.claude/loop-state.md` for the issue, fix manually or provide guidance, then resume:
+```bash
+$ .claude/loop.sh 30
+```
+
+### Max Iterations Reached
+```bash
+Reached max iterations (50).
+Progress saved in .claude/loop-state.md
+To continue: .claude/loop.sh 50
+```
+
+Just run again with more iterations.
+
+### Want to Start Over
+```bash
+rm .claude/loop-state.md
+.claude/loop.sh 50 "new goal here"
+```

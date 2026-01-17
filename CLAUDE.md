@@ -10,8 +10,9 @@
 
 **For batch work with clear criteria, use `/plan-loop-implementation`**. It loops until done.
 
-```
-/plan-loop-implementation [your implementation request]
+```bash
+# Run the actual bash loop (autonomous)
+.claude/loop.sh 50 "add tests for all export hooks"
 ```
 
 **Key feature**: State persists in `.claude/loop-state.md`. When context runs out, just say `continue` and Claude picks up where it left off WITHOUT re-asking questions.

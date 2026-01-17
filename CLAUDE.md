@@ -1,110 +1,137 @@
-# MeshMotion - 3D Model Viewer
+# MeshMotion - Professional 3D Model Viewer
 
-## Project Overview
+## Quick Reference
 
-MeshMotion is a professional 3D model viewer built with Next.js 15 and React 19, featuring advanced GLB/GLTF model loading, animation retargeting, studio lighting presets, material customization, and multi-format export capabilities.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server (localhost:3000) |
+| `npm run build` | Production build (static export) |
+| `npm run lint` | Run ESLint |
+| `npm run type-check` | TypeScript type checking |
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (App Router, Static Export)
+- **Framework**: Next.js 15 (App Router) + React 19
 - **Language**: TypeScript 5 (strict mode)
-- **UI**: React 19, Tailwind CSS 3.4, shadcn/ui, Radix UI
-- **3D Graphics**: Three.js 0.160, React Three Fiber 9.4, @react-three/drei 10.7
-- **State**: Zustand 4.4
+- **3D Graphics**: Three.js 0.160 + React Three Fiber 9.4 + @react-three/drei 10.7
+- **State**: Zustand 4.4 (with devtools + persist middleware)
+- **UI**: Tailwind CSS 3.4 + shadcn/ui + Radix UI
 - **Animation**: GSAP 3.12
-- **Font**: Space Grotesk
+- **Conversion**: AssimpJS (WebAssembly)
 
 ## Project Structure
 
 ```
 src/
-├── app/                    # Next.js App Router pages
+├── app/                    # Next.js App Router
 ├── components/
-│   ├── viewer/            # 3D scene components (Scene, Model, Lighting)
-│   ├── animation/         # Animation controls
-│   ├── panels/            # Layout panels (ActionToolbar, RightSidebar)
-│   ├── settings/          # Settings panels (Lighting, Material, Environment)
-│   ├── export/            # Export functionality
+│   ├── viewer/            # 3D scene (Scene, Model, Lighting, Environment)
+│   ├── animation/         # Animation controls & selectors
+│   ├── panels/            # ActionToolbar, RightSidebar
+│   ├── settings/          # Lighting, Material, Environment settings
+│   ├── export/            # Export modal & format menu
 │   ├── assets/            # Asset management UI
 │   ├── comparison/        # Model comparison mode
-│   └── ui/                # shadcn/ui base components
+│   └── ui/                # shadcn/ui components
 ├── lib/
 │   ├── store/             # Zustand store (viewer-store.ts)
-│   ├── three/             # Three.js utilities and presets
-│   ├── conversion/        # Format conversion (assimp, exporters)
-│   └── storage/           # Local storage utilities
-├── hooks/                 # Custom React hooks (9 files)
+│   ├── three/             # Three.js utilities & presets
+│   ├── conversion/        # Format detection, conversion, export
+│   └── utils.ts           # cn(), formatFileSize(), generateId()
+├── hooks/                 # Custom React hooks
 └── types/                 # TypeScript type definitions
 ```
 
-## Common Commands
+## Critical Patterns
 
-```bash
-npm run dev          # Start development server (localhost:3000)
-npm run build        # Production build (static export)
-npm run lint         # Run ESLint
-npm run type-check   # TypeScript type checking
+### Zustand Store - ALWAYS Use Selectors
+```typescript
+// CORRECT - Only re-renders when isPlaying changes
+const isPlaying = useViewerStore((state) => state.isPlaying)
+
+// WRONG - Re-renders on ANY store change
+const { isPlaying } = useViewerStore()
 ```
 
-## Code Style Guidelines
+### Three.js in useFrame - NEVER Update State
+```typescript
+// CORRECT - Direct ref mutation
+useFrame((_, delta) => {
+  meshRef.current.rotation.y += delta
+})
 
-### TypeScript
-- Use strict mode; no `any` types, prefer `unknown`
-- Use interfaces over types for object shapes
-- Use `const` assertions and discriminated unions
-- Avoid enums; use const objects with `as const`
+// WRONG - Causes 60 React re-renders per second
+useFrame(() => {
+  setRotation(r => r + 0.01)
+})
+```
 
-### React
-- Functional components only; no class components
-- Use named exports over default exports
-- Props interfaces named `ComponentNameProps`
-- Destructure props in function parameters
-- Use `'use client'` directive only when needed
+### Async Results - Standard Pattern
+```typescript
+interface Result<T> {
+  success: boolean
+  data?: T
+  error?: string
+  warnings?: string[]
+}
+```
 
-### Three.js / React Three Fiber
-- Keep 3D scene components minimal and focused
-- Use @react-three/drei helpers when available
-- Dispose of geometries/materials/textures properly
-- Use `useFrame` with caution; avoid heavy computations
-
-### Styling
-- Tailwind CSS utilities first
-- Use `cn()` utility from `@/lib/utils` for conditional classes
-- Follow glassmorphism design patterns
-- Mobile-first responsive design
-
-## Path Aliases
-
-- `@/*` → `./src/*`
-- `@/components/*` → `./src/components/*`
-- `@/lib/*` → `./src/lib/*`
-- `@/hooks/*` → `./src/hooks/*`
-- `@/types/*` → `./src/types/*`
+### Resource Cleanup - ALWAYS Dispose Three.js Objects
+```typescript
+useEffect(() => {
+  const geometry = new THREE.BoxGeometry()
+  return () => geometry.dispose()
+}, [])
+```
 
 ## Key Files
 
-- `src/lib/store/viewer-store.ts` - Main Zustand state management
-- `src/components/viewer/Scene.tsx` - Primary 3D scene container
-- `src/lib/three/lighting-presets.ts` - Studio/Soft/Dramatic/Outdoor presets
-- `src/lib/three/material-presets.ts` - Clay/Wireframe/X-Ray/PBR presets
-- `src/lib/conversion/three-exporters.ts` - GLB/GLTF/FBX/USDZ/OBJ export
+- `src/lib/store/viewer-store.ts` - All application state
+- `src/components/viewer/Scene.tsx` - Main 3D canvas
+- `src/components/viewer/Model.tsx` - Model rendering & animation
+- `src/lib/conversion/three-exporters.ts` - Export to GLB/GLTF/OBJ/STL
+- `src/hooks/use-gltf-loader.ts` - Model loading & conversion
 
-## Important Constraints
+## Constraints
 
-- Max file upload: 50MB (52428800 bytes)
-- Client-side rendering only for 3D scene (no SSR for Three.js)
-- Static HTML export enabled (no server-side features in production)
-- No secrets in `.env` files; all config is NEXT_PUBLIC_*
+- **Max file size**: 50MB (52428800 bytes)
+- **Static export only**: No server-side features in production
+- **Client-side 3D**: All Three.js components use `'use client'` + `ssr: false`
 
-## Testing
+## Custom Agents (invoke with name)
 
-- No existing test suite; follow React Testing Library patterns if adding tests
-- Mock Three.js renderer for component tests
-- Test hooks in isolation with @testing-library/react-hooks
+| Agent | Purpose |
+|-------|---------|
+| `code-reviewer` | Review code for quality & project patterns |
+| `test-architect` | Design & implement test suites |
+| `threejs-optimizer` | Audit & optimize 3D performance |
+| `refactoring-architect` | Safe code transformations |
 
-## Reference Documentation
+## Skills (invoke with /skillname)
 
-@.claude/rules/react.md
-@.claude/rules/nextjs.md
-@.claude/rules/threejs.md
-@.claude/rules/performance.md
+| Skill | Purpose |
+|-------|---------|
+| `/component-generator` | Generate components matching project patterns |
+| `/export-debugger` | Debug 3D model export issues |
+| `/build-deploy` | Build & deployment assistance |
+
+## Detailed Documentation
+
+For implementation details, see:
+- @.claude/rules/react.md - React patterns & hooks
+- @.claude/rules/nextjs.md - Next.js 15 App Router
+- @.claude/rules/threejs.md - Three.js & R3F rules
+- @.claude/rules/typescript.md - TypeScript strict mode
+- @.claude/rules/performance.md - Vercel performance rules
+- @.claude/rules/styling.md - Tailwind & shadcn/ui
+- @.claude/rules/zustand.md - State management
+
+## Path Aliases
+
+| Alias | Path |
+|-------|------|
+| `@/*` | `./src/*` |
+| `@/components/*` | `./src/components/*` |
+| `@/lib/*` | `./src/lib/*` |
+| `@/hooks/*` | `./src/hooks/*` |
+| `@/types/*` | `./src/types/*` |

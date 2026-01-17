@@ -1,167 +1,128 @@
 # MeshMotion - Professional 3D Model Viewer
 
+## 🚀 Start Here: `/plan`
+
+**For ANY request, use `/plan`**. It analyzes, validates, and orchestrates.
+
+```
+/plan [your request in natural language]
+```
+
+Examples:
+- `/plan fix the animation freezing bug`
+- `/plan add screenshot export feature`
+- `/plan refactor the entire export system`
+- `/plan build a complete testing suite`
+
+The `/plan` command will:
+1. **Analyze** your request (scope, type, complexity)
+2. **Ask questions** to validate understanding
+3. **Show** the full orchestration plan (agents, skills, phases)
+4. **Enhance** your prompt with specifics
+5. **Execute** with full progress tracking
+
+---
+
 ## Quick Reference
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server (localhost:3000) |
-| `npm run build` | Production build (static export) |
-| `npm run lint` | Run ESLint |
-| `npm run type-check` | TypeScript type checking |
+| `npm run dev` | Development server (localhost:3000) |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run type-check` | TypeScript check |
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (App Router) + React 19
-- **Language**: TypeScript 5 (strict mode)
-- **3D Graphics**: Three.js 0.160 + React Three Fiber 9.4 + @react-three/drei 10.7
-- **State**: Zustand 4.4 (with devtools + persist middleware)
-- **UI**: Tailwind CSS 3.4 + shadcn/ui + Radix UI
-- **Animation**: GSAP 3.12
-- **Conversion**: AssimpJS (WebAssembly)
+Next.js 15 + React 19 + TypeScript 5 + Three.js 0.160 + R3F 9.4 + Zustand 4.4 + Tailwind 3.4 + shadcn/ui
+
+## Critical Patterns
+
+```typescript
+// Zustand: ALWAYS use selectors
+const isPlaying = useViewerStore((state) => state.isPlaying)
+
+// Three.js: NEVER update state in useFrame
+useFrame((_, delta) => { meshRef.current.rotation.y += delta })
+
+// Async: Standard Result pattern
+interface Result<T> { success: boolean; data?: T; error?: string }
+```
+
+---
+
+## 🤖 Full Capability Set
+
+### Master Command
+| Command | Purpose |
+|---------|---------|
+| `/plan` | **Primary entry point** - analyzes any request and orchestrates |
+
+### Interactive Skills
+| Skill | Purpose |
+|-------|---------|
+| `/feature-planner` | Interactive feature planning |
+| `/debug-wizard` | Guided debugging |
+| `/architecture-decision` | Create ADRs |
+| `/pr-preparation` | Complete PR workflow |
+| `/dependency-auditor` | Security & updates |
+
+### Utility Skills
+| Skill | Purpose |
+|-------|---------|
+| `/component-generator` | Generate components |
+| `/export-debugger` | Debug exports |
+| `/build-deploy` | Build & deploy |
+
+### Specialized Agents
+| Agent | Best For |
+|-------|----------|
+| `orchestrator` | Complex multi-phase tasks |
+| `sprint-planner` | Task breakdown |
+| `code-reviewer` | Code quality |
+| `test-architect` | Testing |
+| `threejs-optimizer` | 3D performance |
+| `refactoring-architect` | Safe refactoring |
+
+---
+
+## 🔧 Automated Features
+
+**Session Start**: Git status, health check, TODOs
+**PreToolUse**: Block dangerous commands, validate edits
+**PostToolUse**: Auto-format code
+
+---
+
+## 📚 Documentation
+
+| Document | Content |
+|----------|---------|
+| @.claude/docs/CAPABILITIES.md | Full capability registry |
+| @.claude/docs/PROMPT_TEMPLATES.md | Prompt enhancement |
+| @.claude/docs/ARCHITECTURE.md | System design |
+| @.claude/docs/CONVENTIONS.md | Code patterns |
+| @.claude/rules/*.md | Coding rules |
+
+---
 
 ## Project Structure
 
 ```
 src/
 ├── app/                    # Next.js App Router
-├── components/
-│   ├── viewer/            # 3D scene (Scene, Model, Lighting, Environment)
-│   ├── animation/         # Animation controls & selectors
-│   ├── panels/            # ActionToolbar, RightSidebar
-│   ├── settings/          # Lighting, Material, Environment settings
-│   ├── export/            # Export modal & format menu
-│   ├── assets/            # Asset management UI
-│   ├── comparison/        # Model comparison mode
-│   └── ui/                # shadcn/ui components
+├── components/             # React components
+│   ├── viewer/            # 3D scene
+│   ├── animation/         # Animation controls
+│   └── ...
 ├── lib/
-│   ├── store/             # Zustand store (viewer-store.ts)
-│   ├── three/             # Three.js utilities & presets
-│   ├── conversion/        # Format detection, conversion, export
-│   └── utils.ts           # cn(), formatFileSize(), generateId()
-├── hooks/                 # Custom React hooks
-└── types/                 # TypeScript type definitions
+│   ├── store/             # Zustand (viewer-store.ts)
+│   ├── three/             # Three.js utilities
+│   └── conversion/        # Format conversion
+├── hooks/                 # Custom hooks
+└── types/                 # TypeScript types
 ```
-
-## Critical Patterns
-
-### Zustand Store - ALWAYS Use Selectors
-```typescript
-// CORRECT - Only re-renders when isPlaying changes
-const isPlaying = useViewerStore((state) => state.isPlaying)
-
-// WRONG - Re-renders on ANY store change
-const { isPlaying } = useViewerStore()
-```
-
-### Three.js in useFrame - NEVER Update State
-```typescript
-// CORRECT - Direct ref mutation
-useFrame((_, delta) => {
-  meshRef.current.rotation.y += delta
-})
-
-// WRONG - Causes 60 React re-renders per second
-useFrame(() => {
-  setRotation(r => r + 0.01)
-})
-```
-
-### Async Results - Standard Pattern
-```typescript
-interface Result<T> {
-  success: boolean
-  data?: T
-  error?: string
-  warnings?: string[]
-}
-```
-
-## Key Files
-
-- `src/lib/store/viewer-store.ts` - All application state
-- `src/components/viewer/Scene.tsx` - Main 3D canvas
-- `src/lib/conversion/three-exporters.ts` - Export to GLB/GLTF/OBJ/STL
-- `src/hooks/use-gltf-loader.ts` - Model loading & conversion
-
-## Constraints
-
-- **Max file size**: 50MB
-- **Static export only**: No server-side features
-- **Client-side 3D**: Use `'use client'` + `ssr: false`
-
----
-
-## 🤖 Intelligent Assistance
-
-### Interactive Skills (use AskUserQuestion)
-
-| Skill | Purpose | Tools Used |
-|-------|---------|------------|
-| `/feature-planner` | Interactive feature planning wizard | AskUserQuestion, TodoWrite, Read |
-| `/debug-wizard` | Guided debugging with decision trees | AskUserQuestion, TodoWrite, Bash |
-| `/architecture-decision` | Create ADRs with guided questions | AskUserQuestion, WebSearch, Write |
-| `/pr-preparation` | Complete PR workflow with checks | AskUserQuestion, TodoWrite, Bash |
-| `/dependency-auditor` | Security & update audit | WebSearch, WebFetch, Bash |
-
-### Specialized Agents
-
-| Agent | Purpose | Best For |
-|-------|---------|----------|
-| `orchestrator` | Master coordinator for complex tasks | Large features, multi-system changes |
-| `sprint-planner` | Interactive sprint/milestone planning | Task breakdown, prioritization |
-| `code-reviewer` | MeshMotion-specific code review | After any code changes |
-| `test-architect` | Test design & implementation | Adding test coverage |
-| `threejs-optimizer` | WebGL performance audit | 3D rendering issues |
-| `refactoring-architect` | Safe code transformations | Structural changes |
-
-### Utility Skills
-
-| Skill | Purpose |
-|-------|---------|
-| `/component-generator` | Generate components matching patterns |
-| `/export-debugger` | Debug 3D model export issues |
-| `/build-deploy` | Build & deployment assistance |
-
----
-
-## 🔧 Automated Assistance
-
-### Session Start
-When a session begins, I automatically:
-- Check git status and recent commits
-- Scan for TypeScript errors
-- Count outstanding TODOs
-- Report project health
-
-### Code Quality Hooks
-- **PreToolUse**: Block dangerous commands, validate edits
-- **PostToolUse**: Auto-format TypeScript/CSS files
-- Protected files: `.env`, lock files, `.git/`
-
----
-
-## 📚 Detailed Documentation
-
-| Document | Content |
-|----------|---------|
-| @.claude/docs/ARCHITECTURE.md | Data flow, state, component tree |
-| @.claude/docs/CONVENTIONS.md | Naming, patterns, code style |
-| @.claude/rules/react.md | React patterns & hooks |
-| @.claude/rules/nextjs.md | Next.js 15 App Router |
-| @.claude/rules/threejs.md | Three.js & R3F rules |
-| @.claude/rules/typescript.md | TypeScript strict mode |
-| @.claude/rules/performance.md | Vercel 40+ performance rules |
-| @.claude/rules/styling.md | Tailwind & shadcn/ui |
-| @.claude/rules/zustand.md | State management |
-
----
 
 ## Path Aliases
 
-| Alias | Path |
-|-------|------|
-| `@/*` | `./src/*` |
-| `@/components/*` | `./src/components/*` |
-| `@/lib/*` | `./src/lib/*` |
-| `@/hooks/*` | `./src/hooks/*` |
-| `@/types/*` | `./src/types/*` |
+`@/*` → `./src/*` | `@/components/*` | `@/lib/*` | `@/hooks/*` | `@/types/*`

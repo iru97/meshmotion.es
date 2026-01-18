@@ -1,0 +1,79 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx *)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git checkout*)",
+      "Bash(git fetch*)",
+      "Bash(git pull*)",
+      "Bash(git push*)",
+      "Bash(git stash*)",
+      "Bash(ls*)",
+      "Bash(cat*)",
+      "Bash(head*)",
+      "Bash(tail*)",
+      "Bash(grep*)",
+      "Bash(find*)",
+      "Bash(wc*)",
+      "Bash(echo*)",
+      "Bash(mkdir*)",
+      "Bash(cp*)",
+      "Bash(mv*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "Task(*)",
+      "TodoWrite(*)",
+      "AskUserQuestion(*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(npm publish*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/session-init.sh"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/validate-bash.sh \"$TOOL_INPUT\"",
+        "tools": ["Bash"]
+      },
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/validate-edit.sh \"$TOOL_INPUT\"",
+        "tools": ["Edit", "Write"]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/post-edit.sh \"$TOOL_INPUT\"",
+        "tools": ["Edit", "Write"]
+      }
+    ]
+  },
+  "preferences": {
+    "todoTracking": true,
+    "autoFormat": true,
+    "strictTypeCheck": true
+  }
+}

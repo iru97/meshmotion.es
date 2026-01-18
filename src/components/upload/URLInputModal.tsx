@@ -169,7 +169,7 @@ export function URLInputModal({ open, onClose }: URLInputModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-lg glass-panel-dark p-0 overflow-hidden !bg-transparent border-white/10 [&>button]:hidden">
+      <DialogContent className="sm:max-w-xl glass-panel-dark p-0 overflow-hidden !bg-transparent border-white/10 [&>button]:hidden">
         {/* Header */}
         <div className="relative px-6 pt-6 pb-4 border-b border-white/10">
           <button

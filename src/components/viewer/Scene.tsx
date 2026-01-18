@@ -42,7 +42,9 @@ export default function Scene() {
     pendingExternalFile,
     isLoadingExternal,
     externalLoadError,
+    isCorsBlocked,
     confirmExternalLoad,
+    retryWithProxy,
     cancelExternalLoad,
     clearError,
   } = useURLParams()
@@ -69,7 +71,9 @@ export default function Scene() {
           fileInfo={pendingExternalFile}
           isLoading={isLoadingExternal}
           error={externalLoadError}
+          isCorsBlocked={isCorsBlocked}
           onConfirm={confirmExternalLoad}
+          onRetryWithProxy={retryWithProxy}
           onCancel={cancelExternalLoad}
           onClearError={clearError}
         />
@@ -151,7 +155,9 @@ export default function Scene() {
         fileInfo={pendingExternalFile}
         isLoading={isLoadingExternal}
         error={externalLoadError}
+        isCorsBlocked={isCorsBlocked}
         onConfirm={confirmExternalLoad}
+        onRetryWithProxy={retryWithProxy}
         onCancel={cancelExternalLoad}
         onClearError={clearError}
       />

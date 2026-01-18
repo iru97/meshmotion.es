@@ -23,8 +23,12 @@ interface ExternalLoadModalProps {
   isLoading: boolean
   /** Error message to display */
   error: string | null
+  /** Whether the error is due to CORS blocking */
+  isCorsBlocked?: boolean
   /** Called when user confirms the load */
   onConfirm: () => void
+  /** Called to retry with CORS proxy */
+  onRetryWithProxy?: () => void
   /** Called when user cancels */
   onCancel: () => void
   /** Called to clear error and retry */
@@ -35,7 +39,9 @@ export function ExternalLoadModal({
   fileInfo,
   isLoading,
   error,
+  isCorsBlocked,
   onConfirm,
+  onRetryWithProxy,
   onCancel,
   onClearError,
 }: ExternalLoadModalProps) {
@@ -112,11 +118,16 @@ export function ExternalLoadModal({
 
           {/* Error display */}
           {error && (
-            <div className="flex gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-              <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-              <div className="text-xs text-red-200/80 flex-1">
-                <p className="font-medium mb-1">Error Loading File</p>
+            <div className={`flex gap-3 p-3 rounded-lg ${isCorsBlocked ? 'bg-orange-500/10 border border-orange-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
+              <AlertTriangle className={`w-4 h-4 ${isCorsBlocked ? 'text-orange-500' : 'text-red-500'} shrink-0 mt-0.5`} />
+              <div className={`text-xs ${isCorsBlocked ? 'text-orange-200/80' : 'text-red-200/80'} flex-1`}>
+                <p className="font-medium mb-1">{isCorsBlocked ? 'CORS Blocked' : 'Error Loading File'}</p>
                 <p>{error}</p>
+                {isCorsBlocked && (
+                  <p className="mt-2 text-white/50">
+                    Note: The proxy routes your request through a third-party server (corsproxy.io).
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -131,25 +142,45 @@ export function ExternalLoadModal({
           >
             Cancel
           </button>
-          <button
-            onClick={error ? onClearError : onConfirm}
-            disabled={isLoading}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-blue-500/80 hover:bg-blue-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Loading...
-              </>
-            ) : error ? (
-              'Dismiss'
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                Load & Save
-              </>
-            )}
-          </button>
+          {isCorsBlocked && onRetryWithProxy ? (
+            <button
+              onClick={onRetryWithProxy}
+              disabled={isLoading}
+              className="flex-1 px-4 py-2.5 rounded-lg bg-orange-500/80 hover:bg-orange-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading via Proxy...
+                </>
+              ) : (
+                <>
+                  <Globe className="w-4 h-4" />
+                  Use Proxy
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={error ? onClearError : onConfirm}
+              disabled={isLoading}
+              className="flex-1 px-4 py-2.5 rounded-lg bg-blue-500/80 hover:bg-blue-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading...
+                </>
+              ) : error ? (
+                'Dismiss'
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  Load & Save
+                </>
+              )}
+            </button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

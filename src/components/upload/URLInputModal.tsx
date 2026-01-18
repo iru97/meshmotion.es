@@ -8,8 +8,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Link2, Download, AlertTriangle, X, Loader2 } from 'lucide-react'
+import { Link2, Download, AlertTriangle, X, Loader2, Globe } from 'lucide-react'
 import { useGLTFLoader } from '@/hooks/use-gltf-loader'
+import { fetchWithCorsDetection, fetchViaProxy } from '@/lib/utils/cors-fetch'
 
 interface URLInputModalProps {
   open: boolean
@@ -56,13 +57,31 @@ export function URLInputModal({ open, onClose }: URLInputModalProps) {
   const [urlInput, setUrlInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isCorsBlocked, setIsCorsBlocked] = useState(false)
+  const [validatedUrl, setValidatedUrl] = useState<{ url: string; fileName: string } | null>(null)
 
   const handleClose = useCallback(() => {
     if (isLoading) return
     setUrlInput('')
     setError(null)
+    setIsCorsBlocked(false)
+    setValidatedUrl(null)
     onClose()
   }, [isLoading, onClose])
+
+  const loadFromBlob = useCallback(async (blob: Blob, fileName: string) => {
+    const mimeType = blob.type || 'model/gltf-binary'
+    const file = new File([blob], fileName, { type: mimeType })
+
+    let result = await loadGLBFile(file)
+
+    // If file has both mesh and animations, auto-select "both"
+    if (result.success && result.needsSelection) {
+      result = await loadGLBFile(file, 'both')
+    }
+
+    return result
+  }, [loadGLBFile])
 
   const handleLoad = useCallback(async () => {
     const validation = parseAndValidateURL(urlInput)
@@ -74,24 +93,23 @@ export function URLInputModal({ open, onClose }: URLInputModalProps) {
 
     setIsLoading(true)
     setError(null)
+    setIsCorsBlocked(false)
+    setValidatedUrl({ url: validation.url!, fileName: validation.fileName! })
 
     try {
-      const response = await fetch(validation.url!, { mode: 'cors' })
+      const fetchResult = await fetchWithCorsDetection(validation.url!)
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`)
+      if (!fetchResult.success) {
+        if (fetchResult.corsBlocked) {
+          // CORS blocked - offer proxy option
+          setIsCorsBlocked(true)
+          setError(`The server at ${validation.domain} blocks cross-origin requests (CORS). You can try loading through a proxy server.`)
+          return
+        }
+        throw new Error(fetchResult.error || 'Failed to fetch file')
       }
 
-      const blob = await response.blob()
-      const mimeType = blob.type || 'model/gltf-binary'
-      const file = new File([blob], validation.fileName!, { type: mimeType })
-
-      let result = await loadGLBFile(file)
-
-      // If file has both mesh and animations, auto-select "both"
-      if (result.success && result.needsSelection) {
-        result = await loadGLBFile(file, 'both')
-      }
+      const result = await loadFromBlob(fetchResult.blob!, validation.fileName!)
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to load model')
@@ -100,19 +118,48 @@ export function URLInputModal({ open, onClose }: URLInputModalProps) {
       // Success - close modal
       setUrlInput('')
       setError(null)
+      setValidatedUrl(null)
       onClose()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load file'
-
-      if (err instanceof TypeError && message.includes('fetch')) {
-        setError(`CORS error: The server doesn't allow cross-origin requests. Try downloading the file manually.`)
-      } else {
-        setError(message)
-      }
+      setError(message)
     } finally {
       setIsLoading(false)
     }
-  }, [urlInput, loadGLBFile, onClose])
+  }, [urlInput, loadFromBlob, onClose])
+
+  const handleRetryWithProxy = useCallback(async () => {
+    if (!validatedUrl) return
+
+    setIsLoading(true)
+    setError(null)
+    setIsCorsBlocked(false)
+
+    try {
+      const fetchResult = await fetchViaProxy(validatedUrl.url)
+
+      if (!fetchResult.success) {
+        throw new Error(fetchResult.error || 'Proxy fetch failed')
+      }
+
+      const result = await loadFromBlob(fetchResult.blob!, validatedUrl.fileName)
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load model')
+      }
+
+      // Success - close modal
+      setUrlInput('')
+      setError(null)
+      setValidatedUrl(null)
+      onClose()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load through proxy'
+      setError(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [validatedUrl, loadFromBlob, onClose])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !isLoading) {
@@ -183,9 +230,16 @@ export function URLInputModal({ open, onClose }: URLInputModalProps) {
 
           {/* Error display */}
           {error && (
-            <div className="flex gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-              <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-              <div className="text-xs text-red-200/80">{error}</div>
+            <div className={`flex gap-3 p-3 rounded-lg ${isCorsBlocked ? 'bg-orange-500/10 border border-orange-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
+              <AlertTriangle className={`w-4 h-4 ${isCorsBlocked ? 'text-orange-500' : 'text-red-500'} shrink-0 mt-0.5`} />
+              <div className={`text-xs ${isCorsBlocked ? 'text-orange-200/80' : 'text-red-200/80'}`}>
+                <p>{error}</p>
+                {isCorsBlocked && (
+                  <p className="mt-2 text-white/50">
+                    Note: The proxy routes your request through a third-party server (corsproxy.io).
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -199,23 +253,43 @@ export function URLInputModal({ open, onClose }: URLInputModalProps) {
           >
             Cancel
           </button>
-          <button
-            onClick={handleLoad}
-            disabled={isLoading || !urlInput.trim()}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-blue-500/80 hover:bg-blue-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                Load Model
-              </>
-            )}
-          </button>
+          {isCorsBlocked ? (
+            <button
+              onClick={handleRetryWithProxy}
+              disabled={isLoading}
+              className="flex-1 px-4 py-2.5 rounded-lg bg-orange-500/80 hover:bg-orange-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading via Proxy...
+                </>
+              ) : (
+                <>
+                  <Globe className="w-4 h-4" />
+                  Use Proxy
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={handleLoad}
+              disabled={isLoading || !urlInput.trim()}
+              className="flex-1 px-4 py-2.5 rounded-lg bg-blue-500/80 hover:bg-blue-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  Load Model
+                </>
+              )}
+            </button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

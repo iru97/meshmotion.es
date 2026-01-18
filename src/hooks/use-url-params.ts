@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useGLTFLoader } from './use-gltf-loader'
+import { fetchWithCorsDetection, fetchViaProxy } from '@/lib/utils/cors-fetch'
 
 interface ExternalFileInfo {
   url: string
@@ -18,8 +19,12 @@ interface UseURLParamsReturn {
   isLoadingExternal: boolean
   /** Error message if external load failed */
   externalLoadError: string | null
+  /** Whether the current error is due to CORS blocking */
+  isCorsBlocked: boolean
   /** Confirm and load the external file */
   confirmExternalLoad: () => Promise<void>
+  /** Retry with CORS proxy */
+  retryWithProxy: () => Promise<void>
   /** Cancel the external load */
   cancelExternalLoad: () => void
   /** Clear any error state */
@@ -71,6 +76,7 @@ export function useURLParams(): UseURLParamsReturn {
   const [pendingExternalFile, setPendingExternalFile] = useState<ExternalFileInfo | null>(null)
   const [isLoadingExternal, setIsLoadingExternal] = useState(false)
   const [externalLoadError, setExternalLoadError] = useState<string | null>(null)
+  const [isCorsBlocked, setIsCorsBlocked] = useState(false)
 
   // Track if we've already processed this URL to avoid re-triggering
   const processedURLRef = useRef<string | null>(null)
@@ -100,6 +106,23 @@ export function useURLParams(): UseURLParamsReturn {
   }, [searchParams])
 
   /**
+   * Load file from blob (shared logic for direct and proxy fetch)
+   */
+  const loadFromBlob = useCallback(async (blob: Blob, fileName: string): Promise<{ success: boolean; error?: string }> => {
+    const mimeType = blob.type || 'model/gltf-binary'
+    const file = new File([blob], fileName, { type: mimeType })
+
+    let result = await loadGLBFile(file)
+
+    // If file has both mesh and animations, auto-select "both"
+    if (result.success && result.needsSelection) {
+      result = await loadGLBFile(file, 'both')
+    }
+
+    return result
+  }, [loadGLBFile])
+
+  /**
    * Confirm and load the external file
    */
   const confirmExternalLoad = useCallback(async () => {
@@ -107,61 +130,74 @@ export function useURLParams(): UseURLParamsReturn {
 
     setIsLoadingExternal(true)
     setExternalLoadError(null)
+    setIsCorsBlocked(false)
 
     try {
-      // Fetch the external file
-      const response = await fetch(pendingExternalFile.url, {
-        mode: 'cors',
-      })
+      // Try direct fetch first
+      const fetchResult = await fetchWithCorsDetection(pendingExternalFile.url)
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`)
+      if (!fetchResult.success) {
+        if (fetchResult.corsBlocked) {
+          // CORS blocked - offer proxy option
+          setIsCorsBlocked(true)
+          setExternalLoadError(
+            `The server at ${pendingExternalFile.domain} blocks cross-origin requests (CORS). You can try loading through a proxy server.`
+          )
+          return
+        }
+        throw new Error(fetchResult.error || 'Failed to fetch file')
       }
 
-      // Get the blob
-      const blob = await response.blob()
+      // Load the file
+      const loadResult = await loadFromBlob(fetchResult.blob!, pendingExternalFile.fileName)
 
-      // Determine MIME type
-      const mimeType = blob.type || 'model/gltf-binary'
-
-      // Create File object
-      const file = new File([blob], pendingExternalFile.fileName, { type: mimeType })
-
-      // Load through existing pipeline (will handle conversion, storage, etc.)
-      let result = await loadGLBFile(file)
-
-      // If file has both mesh and animations, auto-select "both"
-      if (result.success && result.needsSelection) {
-        result = await loadGLBFile(file, 'both')
-      }
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to load model')
+      if (!loadResult.success) {
+        throw new Error(loadResult.error || 'Failed to load model')
       }
 
       // Clear pending state on success
       setPendingExternalFile(null)
-
-      // Clear the URL param after successful load (optional, keeps URL clean)
-      // We don't modify history to avoid issues, but the file is now in storage
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to load external file'
-
-      // Check for CORS errors
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        setExternalLoadError(
-          `CORS error: The server at ${pendingExternalFile.domain} does not allow cross-origin requests. Try downloading the file manually.`
-        )
-      } else {
-        setExternalLoadError(message)
-      }
+      const message = error instanceof Error ? error.message : 'Failed to load external file'
+      setExternalLoadError(message)
     } finally {
       setIsLoadingExternal(false)
     }
-  }, [pendingExternalFile, loadGLBFile])
+  }, [pendingExternalFile, loadFromBlob])
+
+  /**
+   * Retry loading through CORS proxy
+   */
+  const retryWithProxy = useCallback(async () => {
+    if (!pendingExternalFile) return
+
+    setIsLoadingExternal(true)
+    setExternalLoadError(null)
+    setIsCorsBlocked(false)
+
+    try {
+      const fetchResult = await fetchViaProxy(pendingExternalFile.url)
+
+      if (!fetchResult.success) {
+        throw new Error(fetchResult.error || 'Proxy fetch failed')
+      }
+
+      // Load the file
+      const loadResult = await loadFromBlob(fetchResult.blob!, pendingExternalFile.fileName)
+
+      if (!loadResult.success) {
+        throw new Error(loadResult.error || 'Failed to load model')
+      }
+
+      // Clear pending state on success
+      setPendingExternalFile(null)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to load through proxy'
+      setExternalLoadError(message)
+    } finally {
+      setIsLoadingExternal(false)
+    }
+  }, [pendingExternalFile, loadFromBlob])
 
   /**
    * Cancel the external load
@@ -169,6 +205,7 @@ export function useURLParams(): UseURLParamsReturn {
   const cancelExternalLoad = useCallback(() => {
     setPendingExternalFile(null)
     setExternalLoadError(null)
+    setIsCorsBlocked(false)
   }, [])
 
   /**
@@ -176,13 +213,16 @@ export function useURLParams(): UseURLParamsReturn {
    */
   const clearError = useCallback(() => {
     setExternalLoadError(null)
+    setIsCorsBlocked(false)
   }, [])
 
   return {
     pendingExternalFile,
     isLoadingExternal,
     externalLoadError,
+    isCorsBlocked,
     confirmExternalLoad,
+    retryWithProxy,
     cancelExternalLoad,
     clearError,
   }

@@ -3,15 +3,22 @@
  *
  * Handles fetching files from URLs that may be blocked by CORS.
  * First tries direct fetch, then offers proxy fallback with user consent.
+ * Tries multiple proxy services for better reliability.
  */
 
-const CORS_PROXY_URL = 'https://corsproxy.io/?'
+// List of CORS proxy services to try (in order)
+const CORS_PROXIES = [
+  { name: 'corsproxy.io', getUrl: (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}` },
+  { name: 'allorigins', getUrl: (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` },
+  { name: 'corsproxy.io (raw)', getUrl: (url: string) => `https://corsproxy.io/?${url}` },
+]
 
 export interface FetchResult {
   success: boolean
   blob?: Blob
   error?: string
   usedProxy?: boolean
+  proxyName?: string
   corsBlocked?: boolean
 }
 
@@ -63,27 +70,41 @@ export async function fetchDirect(url: string): Promise<FetchResult> {
 }
 
 /**
- * Fetch a file through the CORS proxy
+ * Fetch a file through CORS proxies (tries multiple)
  */
 export async function fetchViaProxy(url: string): Promise<FetchResult> {
-  try {
-    const proxyUrl = `${CORS_PROXY_URL}${encodeURIComponent(url)}`
-    const response = await fetch(proxyUrl, { mode: 'cors' })
+  const errors: string[] = []
 
-    if (!response.ok) {
-      return {
-        success: false,
-        error: `Proxy returned HTTP ${response.status}: ${response.statusText}`,
+  for (const proxy of CORS_PROXIES) {
+    try {
+      const proxyUrl = proxy.getUrl(url)
+      const response = await fetch(proxyUrl, { mode: 'cors' })
+
+      if (response.ok) {
+        const blob = await response.blob()
+
+        // Verify we got actual content (not an error page)
+        if (blob.size > 0) {
+          return { success: true, blob, usedProxy: true, proxyName: proxy.name }
+        }
       }
-    }
 
-    const blob = await response.blob()
-    return { success: true, blob, usedProxy: true }
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Proxy fetch failed',
+      errors.push(`${proxy.name}: HTTP ${response.status}`)
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Unknown error'
+      errors.push(`${proxy.name}: ${msg}`)
     }
+  }
+
+  // Check if URL looks like a signed/authenticated URL
+  const isSignedUrl = url.includes('Expires=') || url.includes('Signature=') || url.includes('token=')
+  const hint = isSignedUrl
+    ? ' This appears to be a signed/authenticated URL which may not work through proxies. Try downloading the file directly and uploading it.'
+    : ''
+
+  return {
+    success: false,
+    error: `All proxies failed.${hint} (${errors.join('; ')})`,
   }
 }
 

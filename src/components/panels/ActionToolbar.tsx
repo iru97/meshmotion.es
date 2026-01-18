@@ -1,10 +1,11 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
-import { Upload, FolderOpen, Split, Settings, Download } from 'lucide-react'
+import { Upload, FolderOpen, Split, Settings, Download, Link2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { URLInputModal } from '../upload/URLInputModal'
 
 /**
  * Top-right action toolbar with Upload, Assets, Comparison, and Settings buttons
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils'
 export function ActionToolbar() {
   const theme = useThemeClasses()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [showURLModal, setShowURLModal] = useState(false)
 
   const showRightSidebar = useViewerStore((state) => state.showRightSidebar)
   const assetPanelOpen = useViewerStore((state) => state.assetPanelOpen)
@@ -95,6 +97,19 @@ export function ActionToolbar() {
         <Upload className={cn('w-5 h-5', theme.iconPrimary)} />
       </button>
 
+      {/* Load from URL Button */}
+      <button
+        onClick={() => setShowURLModal(true)}
+        className={cn(
+          'p-3 transition-all duration-200 active:scale-95 rounded-full',
+          theme.glassPanelDark,
+          theme.hover
+        )}
+        title="Load from URL"
+      >
+        <Link2 className={cn('w-5 h-5', theme.iconPrimary)} />
+      </button>
+
       {/* Export Button - Only visible when model is loaded */}
       {currentCharacter && (
         <button
@@ -124,6 +139,12 @@ export function ActionToolbar() {
       >
         <Settings className={cn('w-5 h-5', theme.iconPrimary)} />
       </button>
+
+      {/* URL Input Modal */}
+      <URLInputModal
+        open={showURLModal}
+        onClose={() => setShowURLModal(false)}
+      />
     </div>
   )
 }

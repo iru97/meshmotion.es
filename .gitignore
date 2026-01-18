@@ -33,6 +33,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Claude Code
-CLAUDE.md
-.claude/
+# Claude Code (keep local files private)
+CLAUDE.local.md
+.claude/settings.local.json

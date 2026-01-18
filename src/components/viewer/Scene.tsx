@@ -20,6 +20,8 @@ import { environmentPresets } from '@/types/environment'
 import { useDefaultModel } from '@/hooks/use-default-model'
 import { usePersistentStorage } from '@/hooks/use-persistent-storage'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
+import { useURLParams } from '@/hooks/use-url-params'
+import { ExternalLoadModal } from '../upload/ExternalLoadModal'
 
 export default function Scene() {
   const environmentPreset = useViewerStore((state) => state.environmentPreset)
@@ -34,6 +36,18 @@ export default function Scene() {
 
   // Global keyboard shortcuts
   useKeyboardShortcuts()
+
+  // Handle URL query params for external file loading
+  const {
+    pendingExternalFile,
+    isLoadingExternal,
+    externalLoadError,
+    isCorsBlocked,
+    confirmExternalLoad,
+    retryWithProxy,
+    cancelExternalLoad,
+    clearError,
+  } = useURLParams()
 
   // Render comparison mode if enabled
   if (comparisonEnabled) {
@@ -51,6 +65,18 @@ export default function Scene() {
         <ComparisonControls />
         <ExportFormatMenu />
         <ExportModal />
+
+        {/* External URL Load Modal */}
+        <ExternalLoadModal
+          fileInfo={pendingExternalFile}
+          isLoading={isLoadingExternal}
+          error={externalLoadError}
+          isCorsBlocked={isCorsBlocked}
+          onConfirm={confirmExternalLoad}
+          onRetryWithProxy={retryWithProxy}
+          onCancel={cancelExternalLoad}
+          onClearError={clearError}
+        />
       </>
     )
   }
@@ -123,6 +149,18 @@ export default function Scene() {
       {/* Export Menu & Modal */}
       <ExportFormatMenu />
       <ExportModal />
+
+      {/* External URL Load Modal */}
+      <ExternalLoadModal
+        fileInfo={pendingExternalFile}
+        isLoading={isLoadingExternal}
+        error={externalLoadError}
+        isCorsBlocked={isCorsBlocked}
+        onConfirm={confirmExternalLoad}
+        onRetryWithProxy={retryWithProxy}
+        onCancel={cancelExternalLoad}
+        onClearError={clearError}
+      />
     </div>
   )
 }

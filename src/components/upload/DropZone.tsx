@@ -3,10 +3,11 @@
 import { useCallback, useRef, useState, useEffect, ChangeEvent } from 'react'
 import { useFileDrop } from '@/hooks/use-file-drop'
 import { useGLTFLoader, UploadOption } from '@/hooks/use-gltf-loader'
-import { Upload } from 'lucide-react'
+import { Upload, Link2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UploadOptionsDialog } from './UploadOptionsDialog'
 import { ConversionProgress } from './ConversionProgress'
+import { URLInputModal } from './URLInputModal'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
 import { useViewerStore } from '@/lib/store/viewer-store'
 
@@ -18,6 +19,7 @@ export function DropZone() {
 
   const [pendingFile, setPendingFile] = useState<{ file: File; analysis: any } | null>(null)
   const [showOptionsDialog, setShowOptionsDialog] = useState(false)
+  const [showURLModal, setShowURLModal] = useState(false)
   const [currentFileName, setCurrentFileName] = useState<string>('')
 
   const handleFiles = useCallback(
@@ -112,10 +114,25 @@ export function DropZone() {
       >
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="glass-panel-dark p-12 flex flex-col items-center gap-4 pointer-events-none">
-            <Upload className="w-16 h-16 text-white" />
-            <p className="text-white text-xl font-medium">Drop GLB file here</p>
-            <p className="text-white/70 text-sm">Supports .glb and .gltf files up to 50MB</p>
+          <div className="glass-panel-dark p-12 flex flex-col items-center gap-4">
+            <Upload className="w-16 h-16 text-white pointer-events-none" />
+            <p className="text-white text-xl font-medium pointer-events-none">Drop GLB file here</p>
+            <p className="text-white/70 text-sm pointer-events-none">Supports .glb, .gltf, .fbx, .obj and more</p>
+            <div className="flex items-center gap-3 mt-2 pointer-events-auto">
+              <div className="h-px w-12 bg-white/20" />
+              <span className="text-white/50 text-sm">or</span>
+              <div className="h-px w-12 bg-white/20" />
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowURLModal(true)
+              }}
+              className="pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm transition-colors"
+            >
+              <Link2 className="w-4 h-4" />
+              Load from URL
+            </button>
           </div>
         </div>
       </div>
@@ -146,6 +163,12 @@ export function DropZone() {
       {conversionProgress && currentFileName && (
         <ConversionProgress progress={conversionProgress} fileName={currentFileName} />
       )}
+
+      {/* URL Input Modal */}
+      <URLInputModal
+        open={showURLModal}
+        onClose={() => setShowURLModal(false)}
+      />
     </>
   )
 }

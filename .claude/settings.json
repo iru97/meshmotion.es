@@ -1,0 +1,164 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(src/**/*)",
+      "Read(public/**/*)",
+      "Read(.claude/**/*)",
+      "Read(*.json)",
+      "Read(*.md)",
+      "Read(*.ts)",
+      "Read(*.tsx)",
+      "Read(*.js)",
+      "Read(*.css)",
+      "Read(*.config.*)",
+
+      "Glob(**/*)",
+      "Grep(**/*)",
+
+      "Bash(npm run dev)",
+      "Bash(npm run build)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run type-check)",
+      "Bash(npm run test)",
+      "Bash(npm run test:*)",
+      "Bash(npm run format)",
+      "Bash(npm ci)",
+
+      "Bash(npx prettier --write *)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch *)",
+      "Bash(git show *)",
+      "Bash(git stash *)",
+
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(find *)",
+      "Bash(rg *)",
+      "Bash(fd *)",
+
+      "Bash(node *)",
+      "Bash(npx *)",
+      "Bash(which *)",
+      "Bash(echo *)"
+    ],
+
+    "ask": [
+      "Write(**/*)",
+      "Edit(**/*)",
+
+      "Bash(npm install *)",
+      "Bash(npm uninstall *)",
+
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git merge *)",
+      "Bash(git rebase *)",
+      "Bash(git reset *)",
+
+      "Bash(rm *)",
+      "Bash(mv *)",
+      "Bash(cp *)",
+      "Bash(mkdir *)"
+    ],
+
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/secrets/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+
+      "Write(.env)",
+      "Write(.env.*)",
+      "Write(.git/**/*)",
+      "Write(node_modules/**/*)",
+      "Write(package-lock.json)",
+      "Write(yarn.lock)",
+      "Write(pnpm-lock.yaml)",
+
+      "Edit(.env)",
+      "Edit(.env.*)",
+      "Edit(.git/**/*)",
+      "Edit(package-lock.json)",
+
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)",
+      "Bash(* > /etc/*)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)",
+      "Bash(git push --force *)",
+      "Bash(git push * --force)"
+    ]
+  },
+
+  "env": {
+    "NODE_ENV": "development",
+    "FORCE_COLOR": "1"
+  },
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-init.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/validate-bash.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/validate-edit.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-edit.sh",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

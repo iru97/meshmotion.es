@@ -2,6 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'export', // Enable static HTML export
+  trailingSlash: true, // Required for static export error pages
+  skipTrailingSlashRedirect: true,
   images: {
     unoptimized: true, // Required for static export
   },

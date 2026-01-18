@@ -128,7 +128,12 @@ export function useURLParams(): UseURLParamsReturn {
       const file = new File([blob], pendingExternalFile.fileName, { type: mimeType })
 
       // Load through existing pipeline (will handle conversion, storage, etc.)
-      const result = await loadGLBFile(file)
+      let result = await loadGLBFile(file)
+
+      // If file has both mesh and animations, auto-select "both"
+      if (result.success && result.needsSelection) {
+        result = await loadGLBFile(file, 'both')
+      }
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to load model')

@@ -86,7 +86,12 @@ export function URLInputModal({ open, onClose }: URLInputModalProps) {
       const mimeType = blob.type || 'model/gltf-binary'
       const file = new File([blob], validation.fileName!, { type: mimeType })
 
-      const result = await loadGLBFile(file)
+      let result = await loadGLBFile(file)
+
+      // If file has both mesh and animations, auto-select "both"
+      if (result.success && result.needsSelection) {
+        result = await loadGLBFile(file, 'both')
+      }
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to load model')

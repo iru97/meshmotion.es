@@ -19,8 +19,8 @@
 - [x] [6/10] Video Recording: Add recording button and integrate turntable mode
 - [x] [7/10] Embeddable Widget: Create /embed route with minimal UI
 - [x] [8/10] Embeddable Widget: Create EmbedCodeModal with customization options
-- [ ] [9/10] Shareable URLs: Add URL state encoding/decoding utilities
-- [ ] [10/10] Shareable URLs: Create ShareModal with copy link and QR code
+- [x] [9/10] Shareable URLs: Add URL state encoding/decoding utilities
+- [x] [10/10] Shareable URLs: Create ShareModal with copy link and QR code
 
 ## Progress Log
 - 2026-01-20: Loop started - Phase 1 sharing features implementation

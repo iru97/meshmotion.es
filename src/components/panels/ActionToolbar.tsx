@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
-import { Upload, FolderOpen, Split, Settings, Download, Link2, Camera, Video, Code } from 'lucide-react'
+import { Upload, FolderOpen, Split, Settings, Download, Link2, Camera, Video, Code, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { URLInputModal } from '../upload/URLInputModal'
 
@@ -28,6 +28,7 @@ export function ActionToolbar() {
   const toggleScreenshotModal = useViewerStore((state) => state.toggleScreenshotModal)
   const toggleRecordingModal = useViewerStore((state) => state.toggleRecordingModal)
   const toggleEmbedModal = useViewerStore((state) => state.toggleEmbedModal)
+  const toggleShareModal = useViewerStore((state) => state.toggleShareModal)
 
   // Hide toolbar when RightSidebar is open
   if (showRightSidebar) return null
@@ -171,6 +172,21 @@ export function ActionToolbar() {
           title="Get Embed Code"
         >
           <Code className={cn('w-5 h-5', theme.iconPrimary)} />
+        </button>
+      )}
+
+      {/* Share Button - Only visible when model is loaded */}
+      {currentCharacter && (
+        <button
+          onClick={toggleShareModal}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover
+          )}
+          title="Share Model (Shift+S)"
+        >
+          <Share2 className={cn('w-5 h-5', theme.iconPrimary)} />
         </button>
       )}
 

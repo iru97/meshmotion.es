@@ -25,6 +25,7 @@ import { ExternalLoadModal } from '../upload/ExternalLoadModal'
 import { ScreenshotModal } from '../screenshot/ScreenshotModal'
 import { RecordingModal } from '../recording/RecordingModal'
 import { EmbedCodeModal } from '../embed/EmbedCodeModal'
+import { ShareModal } from '../share/ShareModal'
 
 export default function Scene() {
   const environmentPreset = useViewerStore((state) => state.environmentPreset)
@@ -71,6 +72,7 @@ export default function Scene() {
         <ScreenshotModal />
         <RecordingModal />
         <EmbedCodeModal />
+        <ShareModal />
 
         {/* External URL Load Modal */}
         <ExternalLoadModal
@@ -165,6 +167,9 @@ export default function Scene() {
 
       {/* Embed Code Modal */}
       <EmbedCodeModal />
+
+      {/* Share Modal */}
+      <ShareModal />
 
       {/* External URL Load Modal */}
       <ExternalLoadModal

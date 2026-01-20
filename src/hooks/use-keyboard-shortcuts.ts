@@ -122,6 +122,15 @@ export function useKeyboardShortcuts() {
         }
       }
 
+      // Shift+S - Share (only when model loaded)
+      if (key === 's' && !ctrl && shift) {
+        const currentCharacter = useViewerStore.getState().currentCharacter
+        if (currentCharacter) {
+          e.preventDefault()
+          useViewerStore.getState().toggleShareModal()
+        }
+      }
+
       // Esc - Close panels/dialogs
       if (key === 'escape') {
         e.preventDefault()

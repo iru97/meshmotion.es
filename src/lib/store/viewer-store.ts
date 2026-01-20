@@ -58,6 +58,9 @@ interface ViewerState {
   // Embed
   embedModalOpen: boolean
 
+  // Share
+  shareModalOpen: boolean
+
   // Actions
   setCharacter: (model: GLTFModel | null) => void
   setAnimation: (clip: THREE.AnimationClip | null) => void
@@ -120,6 +123,10 @@ interface ViewerState {
   // Embed Actions
   toggleEmbedModal: () => void
   setEmbedModalOpen: (open: boolean) => void
+
+  // Share Actions
+  toggleShareModal: () => void
+  setShareModalOpen: (open: boolean) => void
 }
 
 export const useViewerStore = create<ViewerState>()(
@@ -167,6 +174,9 @@ export const useViewerStore = create<ViewerState>()(
 
         // Embed
         embedModalOpen: false,
+
+        // Share
+        shareModalOpen: false,
 
         // Actions
         setCharacter: (model) => set({ currentCharacter: model }),
@@ -419,6 +429,11 @@ export const useViewerStore = create<ViewerState>()(
         toggleEmbedModal: () =>
           set((state) => ({ embedModalOpen: !state.embedModalOpen })),
         setEmbedModalOpen: (open) => set({ embedModalOpen: open }),
+
+        // Share Actions
+        toggleShareModal: () =>
+          set((state) => ({ shareModalOpen: !state.shareModalOpen })),
+        setShareModalOpen: (open) => set({ shareModalOpen: open }),
       }),
       {
         name: 'viewer-storage',

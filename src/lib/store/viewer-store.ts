@@ -52,6 +52,9 @@ interface ViewerState {
   // Screenshot
   screenshotModalOpen: boolean
 
+  // Recording
+  recordingModalOpen: boolean
+
   // Actions
   setCharacter: (model: GLTFModel | null) => void
   setAnimation: (clip: THREE.AnimationClip | null) => void
@@ -106,6 +109,10 @@ interface ViewerState {
   // Screenshot Actions
   toggleScreenshotModal: () => void
   setScreenshotModalOpen: (open: boolean) => void
+
+  // Recording Actions
+  toggleRecordingModal: () => void
+  setRecordingModalOpen: (open: boolean) => void
 }
 
 export const useViewerStore = create<ViewerState>()(
@@ -147,6 +154,9 @@ export const useViewerStore = create<ViewerState>()(
 
         // Screenshot
         screenshotModalOpen: false,
+
+        // Recording
+        recordingModalOpen: false,
 
         // Actions
         setCharacter: (model) => set({ currentCharacter: model }),
@@ -389,6 +399,11 @@ export const useViewerStore = create<ViewerState>()(
         toggleScreenshotModal: () =>
           set((state) => ({ screenshotModalOpen: !state.screenshotModalOpen })),
         setScreenshotModalOpen: (open) => set({ screenshotModalOpen: open }),
+
+        // Recording Actions
+        toggleRecordingModal: () =>
+          set((state) => ({ recordingModalOpen: !state.recordingModalOpen })),
+        setRecordingModalOpen: (open) => set({ recordingModalOpen: open }),
       }),
       {
         name: 'viewer-storage',

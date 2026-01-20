@@ -112,6 +112,16 @@ export function useKeyboardShortcuts() {
         }
       }
 
+      // R - Record video (only when model loaded and not in comparison mode)
+      if (key === 'r' && !ctrl && !shift) {
+        const comparisonEnabled = useViewerStore.getState().comparisonMode.enabled
+        const currentCharacter = useViewerStore.getState().currentCharacter
+        if (!comparisonEnabled && currentCharacter) {
+          e.preventDefault()
+          useViewerStore.getState().toggleRecordingModal()
+        }
+      }
+
       // Esc - Close panels/dialogs
       if (key === 'escape') {
         e.preventDefault()

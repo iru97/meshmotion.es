@@ -14,9 +14,9 @@
 - [x] [1/10] Screenshot Export: Add screenshot utility hook
 - [x] [2/10] Screenshot Export: Create ScreenshotModal component with options
 - [x] [3/10] Screenshot Export: Add screenshot button to toolbar and keyboard shortcut
-- [ ] [4/10] Video Recording: Add video recording hook with MediaRecorder
-- [ ] [5/10] Video Recording: Create RecordingModal component with duration/format options
-- [ ] [6/10] Video Recording: Add recording button and integrate turntable mode
+- [x] [4/10] Video Recording: Add video recording hook with MediaRecorder
+- [x] [5/10] Video Recording: Create RecordingModal component with duration/format options
+- [x] [6/10] Video Recording: Add recording button and integrate turntable mode
 - [ ] [7/10] Embeddable Widget: Create /embed route with minimal UI
 - [ ] [8/10] Embeddable Widget: Create EmbedCodeModal with customization options
 - [ ] [9/10] Shareable URLs: Add URL state encoding/decoding utilities

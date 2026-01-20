@@ -23,6 +23,7 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { useURLParams } from '@/hooks/use-url-params'
 import { ExternalLoadModal } from '../upload/ExternalLoadModal'
 import { ScreenshotModal } from '../screenshot/ScreenshotModal'
+import { RecordingModal } from '../recording/RecordingModal'
 
 export default function Scene() {
   const environmentPreset = useViewerStore((state) => state.environmentPreset)
@@ -67,6 +68,7 @@ export default function Scene() {
         <ExportFormatMenu />
         <ExportModal />
         <ScreenshotModal />
+        <RecordingModal />
 
         {/* External URL Load Modal */}
         <ExternalLoadModal
@@ -155,6 +157,9 @@ export default function Scene() {
 
       {/* Screenshot Modal */}
       <ScreenshotModal />
+
+      {/* Recording Modal */}
+      <RecordingModal />
 
       {/* External URL Load Modal */}
       <ExternalLoadModal

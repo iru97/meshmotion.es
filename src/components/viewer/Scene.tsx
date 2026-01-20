@@ -24,6 +24,7 @@ import { useURLParams } from '@/hooks/use-url-params'
 import { ExternalLoadModal } from '../upload/ExternalLoadModal'
 import { ScreenshotModal } from '../screenshot/ScreenshotModal'
 import { RecordingModal } from '../recording/RecordingModal'
+import { EmbedCodeModal } from '../embed/EmbedCodeModal'
 
 export default function Scene() {
   const environmentPreset = useViewerStore((state) => state.environmentPreset)
@@ -69,6 +70,7 @@ export default function Scene() {
         <ExportModal />
         <ScreenshotModal />
         <RecordingModal />
+        <EmbedCodeModal />
 
         {/* External URL Load Modal */}
         <ExternalLoadModal
@@ -160,6 +162,9 @@ export default function Scene() {
 
       {/* Recording Modal */}
       <RecordingModal />
+
+      {/* Embed Code Modal */}
+      <EmbedCodeModal />
 
       {/* External URL Load Modal */}
       <ExternalLoadModal

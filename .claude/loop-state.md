@@ -17,8 +17,8 @@
 - [x] [4/10] Video Recording: Add video recording hook with MediaRecorder
 - [x] [5/10] Video Recording: Create RecordingModal component with duration/format options
 - [x] [6/10] Video Recording: Add recording button and integrate turntable mode
-- [ ] [7/10] Embeddable Widget: Create /embed route with minimal UI
-- [ ] [8/10] Embeddable Widget: Create EmbedCodeModal with customization options
+- [x] [7/10] Embeddable Widget: Create /embed route with minimal UI
+- [x] [8/10] Embeddable Widget: Create EmbedCodeModal with customization options
 - [ ] [9/10] Shareable URLs: Add URL state encoding/decoding utilities
 - [ ] [10/10] Shareable URLs: Create ShareModal with copy link and QR code
 

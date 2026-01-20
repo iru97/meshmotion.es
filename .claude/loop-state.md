@@ -1,27 +1,26 @@
 # Loop Implementation State
 
-## Status: COMPLETE
+## Status: IN_PROGRESS
 
 ## Original Request
-> Implement Phase 1 sharing features from the roadmap: screenshot export, video/GIF recording, embeddable widget, and shareable URLs
+> Implement Phase 2 viewing/presentation features from the roadmap: turntable mode, camera presets, fullscreen, and AR support
 
 ## Requirements
-- Scope: Phase 1 - Critical sharing features for community adoption
-- Success Criteria: All 4 features working, TypeScript passes, lint passes, build passes
+- Scope: Phase 2 - Mobile & Presentation features
+- Success Criteria: All 4 features working, TypeScript passes, lint passes
 - Constraints: Browser-only (no backend), performance-first, follow existing patterns
 
 ## Tasks
-- [x] [1/10] Screenshot Export: Add screenshot utility hook
-- [x] [2/10] Screenshot Export: Create ScreenshotModal component with options
-- [x] [3/10] Screenshot Export: Add screenshot button to toolbar and keyboard shortcut
-- [x] [4/10] Video Recording: Add video recording hook with MediaRecorder
-- [x] [5/10] Video Recording: Create RecordingModal component with duration/format options
-- [x] [6/10] Video Recording: Add recording button and integrate turntable mode
-- [x] [7/10] Embeddable Widget: Create /embed route with minimal UI
-- [x] [8/10] Embeddable Widget: Create EmbedCodeModal with customization options
-- [x] [9/10] Shareable URLs: Add URL state encoding/decoding utilities
-- [x] [10/10] Shareable URLs: Create ShareModal with copy link and QR code
+- [x] [1/8] Turntable Mode: Add turntable state to store
+- [x] [2/8] Turntable Mode: Create turntable hook with rotation logic
+- [x] [3/8] Turntable Mode: Add turntable toggle to UI
+- [x] [4/8] Camera Presets: Add preset views (front/side/top/back)
+- [x] [5/8] Camera Presets: Create camera preset panel UI
+- [x] [6/8] Fullscreen: Add fullscreen hook and button
+- [x] [7/8] Fullscreen: Implement minimal UI mode for fullscreen
+- [x] [8/8] AR Quick Look: Add WebXR/AR button for supported devices
 
 ## Progress Log
-- 2026-01-20: Loop started - Phase 1 sharing features implementation
-- 2026-01-20: Loop complete - All 10 tasks finished and pushed
+- 2026-01-20: Phase 1 complete - Sharing features implemented
+- 2026-01-20: Phase 2 started - View/Presentation features
+

@@ -26,6 +26,10 @@ import { ScreenshotModal } from '../screenshot/ScreenshotModal'
 import { RecordingModal } from '../recording/RecordingModal'
 import { EmbedCodeModal } from '../embed/EmbedCodeModal'
 import { ShareModal } from '../share/ShareModal'
+import { TurntableRotation } from '../turntable/TurntableRotation'
+import { CameraPresetController } from '../camera/CameraPresetController'
+import { CameraPresetsPanel } from '../camera/CameraPresetsPanel'
+import { selectCameraPreset } from '../camera/CameraPresetController'
 
 export default function Scene() {
   const environmentPreset = useViewerStore((state) => state.environmentPreset)
@@ -123,6 +127,12 @@ export default function Scene() {
         {/* 3D Model */}
         <Model />
 
+        {/* Turntable Rotation */}
+        <TurntableRotation />
+
+        {/* Camera Preset Controller */}
+        <CameraPresetController />
+
         {/* Camera Controls */}
         <OrbitControls
           makeDefault
@@ -170,6 +180,9 @@ export default function Scene() {
 
       {/* Share Modal */}
       <ShareModal />
+
+      {/* Camera Presets Panel */}
+      <CameraPresetsPanel onSelectPreset={selectCameraPreset} />
 
       {/* External URL Load Modal */}
       <ExternalLoadModal

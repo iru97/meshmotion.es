@@ -61,6 +61,17 @@ interface ViewerState {
   // Share
   shareModalOpen: boolean
 
+  // Turntable
+  turntableEnabled: boolean
+  turntableSpeed: number
+
+  // Fullscreen
+  isFullscreen: boolean
+  minimalUIMode: boolean
+
+  // Camera Presets
+  cameraPresetsOpen: boolean
+
   // Actions
   setCharacter: (model: GLTFModel | null) => void
   setAnimation: (clip: THREE.AnimationClip | null) => void
@@ -127,6 +138,17 @@ interface ViewerState {
   // Share Actions
   toggleShareModal: () => void
   setShareModalOpen: (open: boolean) => void
+
+  // Turntable Actions
+  toggleTurntable: () => void
+  setTurntableSpeed: (speed: number) => void
+
+  // Fullscreen Actions
+  toggleFullscreen: () => void
+  setMinimalUIMode: (enabled: boolean) => void
+
+  // Camera Preset Actions
+  toggleCameraPresets: () => void
 }
 
 export const useViewerStore = create<ViewerState>()(
@@ -177,6 +199,17 @@ export const useViewerStore = create<ViewerState>()(
 
         // Share
         shareModalOpen: false,
+
+        // Turntable
+        turntableEnabled: false,
+        turntableSpeed: 1,
+
+        // Fullscreen
+        isFullscreen: false,
+        minimalUIMode: false,
+
+        // Camera Presets
+        cameraPresetsOpen: false,
 
         // Actions
         setCharacter: (model) => set({ currentCharacter: model }),
@@ -434,6 +467,20 @@ export const useViewerStore = create<ViewerState>()(
         toggleShareModal: () =>
           set((state) => ({ shareModalOpen: !state.shareModalOpen })),
         setShareModalOpen: (open) => set({ shareModalOpen: open }),
+
+        // Turntable Actions
+        toggleTurntable: () =>
+          set((state) => ({ turntableEnabled: !state.turntableEnabled })),
+        setTurntableSpeed: (speed) => set({ turntableSpeed: speed }),
+
+        // Fullscreen Actions
+        toggleFullscreen: () =>
+          set((state) => ({ isFullscreen: !state.isFullscreen })),
+        setMinimalUIMode: (enabled) => set({ minimalUIMode: enabled }),
+
+        // Camera Preset Actions
+        toggleCameraPresets: () =>
+          set((state) => ({ cameraPresetsOpen: !state.cameraPresetsOpen })),
       }),
       {
         name: 'viewer-storage',

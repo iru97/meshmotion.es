@@ -3,9 +3,11 @@
 import { useRef, useState } from 'react'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
-import { Upload, FolderOpen, Split, Settings, Download, Link2, Camera, Video, Code, Share2 } from 'lucide-react'
+import { Upload, FolderOpen, Split, Settings, Download, Link2, Camera, Video, Code, Share2, RotateCw, Crosshair, Maximize, Minimize, View } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { URLInputModal } from '../upload/URLInputModal'
+import { useFullscreen } from '@/hooks/use-fullscreen'
+import { useARSupport } from '@/hooks/use-ar-support'
 
 /**
  * Top-right action toolbar with Upload, Assets, Comparison, and Settings buttons
@@ -29,6 +31,36 @@ export function ActionToolbar() {
   const toggleRecordingModal = useViewerStore((state) => state.toggleRecordingModal)
   const toggleEmbedModal = useViewerStore((state) => state.toggleEmbedModal)
   const toggleShareModal = useViewerStore((state) => state.toggleShareModal)
+  const turntableEnabled = useViewerStore((state) => state.turntableEnabled)
+  const toggleTurntable = useViewerStore((state) => state.toggleTurntable)
+  const cameraPresetsOpen = useViewerStore((state) => state.cameraPresetsOpen)
+  const toggleCameraPresets = useViewerStore((state) => state.toggleCameraPresets)
+  const minimalUIMode = useViewerStore((state) => state.minimalUIMode)
+
+  const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
+  const { isSupported: arSupported, launchAR, isChecking: arChecking } = useARSupport()
+
+  // Hide toolbar when RightSidebar is open or in minimal UI mode
+  if (showRightSidebar) return null
+
+  // In minimal UI mode, show only fullscreen toggle
+  if (minimalUIMode) {
+    return (
+      <div className="fixed top-4 right-4 z-30 flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity">
+        <button
+          onClick={toggleFullscreen}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover
+          )}
+          title="Exit Fullscreen (F)"
+        >
+          <Minimize className={cn('w-5 h-5', theme.iconPrimary)} />
+        </button>
+      </div>
+    )
+  }
 
   // Hide toolbar when RightSidebar is open
   if (showRightSidebar) return null
@@ -130,6 +162,38 @@ export function ActionToolbar() {
         </button>
       )}
 
+      {/* Turntable Button - Only visible when model is loaded */}
+      {currentCharacter && (
+        <button
+          onClick={toggleTurntable}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover,
+            turntableEnabled && 'bg-blue-600'
+          )}
+          title={turntableEnabled ? 'Stop Turntable (T)' : 'Start Turntable (T)'}
+        >
+          <RotateCw className={cn('w-5 h-5', turntableEnabled ? 'text-white' : theme.iconPrimary)} />
+        </button>
+      )}
+
+      {/* Camera Presets Button - Only visible when model is loaded */}
+      {currentCharacter && (
+        <button
+          onClick={toggleCameraPresets}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover,
+            cameraPresetsOpen && 'bg-white/20'
+          )}
+          title="Camera Views (V)"
+        >
+          <Crosshair className={cn('w-5 h-5', theme.iconPrimary)} />
+        </button>
+      )}
+
       {/* Screenshot Button - Only visible when model is loaded */}
       {currentCharacter && (
         <button
@@ -189,6 +253,43 @@ export function ActionToolbar() {
           <Share2 className={cn('w-5 h-5', theme.iconPrimary)} />
         </button>
       )}
+
+      {/* AR Button - Only visible when model is loaded and AR is supported */}
+      {currentCharacter && arSupported && !arChecking && (
+        <button
+          onClick={() => {
+            const modelUrl = currentCharacter.url
+            if (modelUrl) {
+              launchAR(modelUrl, currentCharacter.name)
+            }
+          }}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover
+          )}
+          title="View in AR"
+        >
+          <View className={cn('w-5 h-5', theme.iconPrimary)} />
+        </button>
+      )}
+
+      {/* Fullscreen Button */}
+      <button
+        onClick={toggleFullscreen}
+        className={cn(
+          'p-3 transition-all duration-200 active:scale-95 rounded-full',
+          theme.glassPanelDark,
+          theme.hover
+        )}
+        title={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
+      >
+        {isFullscreen ? (
+          <Minimize className={cn('w-5 h-5', theme.iconPrimary)} />
+        ) : (
+          <Maximize className={cn('w-5 h-5', theme.iconPrimary)} />
+        )}
+      </button>
 
       {/* Settings Button - Toggle sidebar */}
       <button

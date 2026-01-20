@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
-import { Upload, FolderOpen, Split, Settings, Download, Link2 } from 'lucide-react'
+import { Upload, FolderOpen, Split, Settings, Download, Link2, Camera } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { URLInputModal } from '../upload/URLInputModal'
 
@@ -25,6 +25,7 @@ export function ActionToolbar() {
   const toggleAssetPanel = useViewerStore((state) => state.toggleAssetPanel)
   const toggleComparisonPanel = useViewerStore((state) => state.toggleComparisonPanel)
   const toggleExportMenu = useViewerStore((state) => state.toggleExportMenu)
+  const toggleScreenshotModal = useViewerStore((state) => state.toggleScreenshotModal)
 
   // Hide toolbar when RightSidebar is open
   if (showRightSidebar) return null
@@ -123,6 +124,21 @@ export function ActionToolbar() {
           title="Export Model"
         >
           <Download className={cn('w-5 h-5', theme.iconPrimary)} />
+        </button>
+      )}
+
+      {/* Screenshot Button - Only visible when model is loaded */}
+      {currentCharacter && (
+        <button
+          onClick={toggleScreenshotModal}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover
+          )}
+          title="Take Screenshot"
+        >
+          <Camera className={cn('w-5 h-5', theme.iconPrimary)} />
         </button>
       )}
 

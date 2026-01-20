@@ -102,6 +102,16 @@ export function useKeyboardShortcuts() {
         useViewerStore.getState().setLoop(!loop)
       }
 
+      // P - Screenshot (only when model loaded and not in comparison mode)
+      if (key === 'p' && !ctrl && !shift) {
+        const comparisonEnabled = useViewerStore.getState().comparisonMode.enabled
+        const currentCharacter = useViewerStore.getState().currentCharacter
+        if (!comparisonEnabled && currentCharacter) {
+          e.preventDefault()
+          useViewerStore.getState().toggleScreenshotModal()
+        }
+      }
+
       // Esc - Close panels/dialogs
       if (key === 'escape') {
         e.preventDefault()

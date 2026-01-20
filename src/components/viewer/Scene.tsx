@@ -22,6 +22,7 @@ import { usePersistentStorage } from '@/hooks/use-persistent-storage'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { useURLParams } from '@/hooks/use-url-params'
 import { ExternalLoadModal } from '../upload/ExternalLoadModal'
+import { ScreenshotModal } from '../screenshot/ScreenshotModal'
 
 export default function Scene() {
   const environmentPreset = useViewerStore((state) => state.environmentPreset)
@@ -65,6 +66,7 @@ export default function Scene() {
         <ComparisonControls />
         <ExportFormatMenu />
         <ExportModal />
+        <ScreenshotModal />
 
         {/* External URL Load Modal */}
         <ExternalLoadModal
@@ -89,8 +91,9 @@ export default function Scene() {
         shadows
         gl={{
           antialias: true,
-          alpha: false,
+          alpha: true,
           powerPreference: 'high-performance',
+          preserveDrawingBuffer: true,
         }}
         dpr={[1, 2]}
       >
@@ -149,6 +152,9 @@ export default function Scene() {
       {/* Export Menu & Modal */}
       <ExportFormatMenu />
       <ExportModal />
+
+      {/* Screenshot Modal */}
+      <ScreenshotModal />
 
       {/* External URL Load Modal */}
       <ExternalLoadModal

@@ -49,6 +49,9 @@ interface ViewerState {
   exportMenuOpen: boolean
   selectedExportFormat: string | null
 
+  // Screenshot
+  screenshotModalOpen: boolean
+
   // Actions
   setCharacter: (model: GLTFModel | null) => void
   setAnimation: (clip: THREE.AnimationClip | null) => void
@@ -99,6 +102,10 @@ interface ViewerState {
   // Export Actions
   toggleExportMenu: () => void
   setSelectedExportFormat: (format: string | null) => void
+
+  // Screenshot Actions
+  toggleScreenshotModal: () => void
+  setScreenshotModalOpen: (open: boolean) => void
 }
 
 export const useViewerStore = create<ViewerState>()(
@@ -137,6 +144,9 @@ export const useViewerStore = create<ViewerState>()(
         // Export
         exportMenuOpen: false,
         selectedExportFormat: null,
+
+        // Screenshot
+        screenshotModalOpen: false,
 
         // Actions
         setCharacter: (model) => set({ currentCharacter: model }),
@@ -374,6 +384,11 @@ export const useViewerStore = create<ViewerState>()(
         toggleExportMenu: () =>
           set((state) => ({ exportMenuOpen: !state.exportMenuOpen })),
         setSelectedExportFormat: (format) => set({ selectedExportFormat: format }),
+
+        // Screenshot Actions
+        toggleScreenshotModal: () =>
+          set((state) => ({ screenshotModalOpen: !state.screenshotModalOpen })),
+        setScreenshotModalOpen: (open) => set({ screenshotModalOpen: open }),
       }),
       {
         name: 'viewer-storage',

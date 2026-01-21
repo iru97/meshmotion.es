@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
-import { Upload, FolderOpen, Split, Settings, Download, Link2, Camera, Video, Code, Share2, RotateCw, Crosshair, Maximize, Minimize, View, MapPin, Ruler, BarChart3, Bookmark } from 'lucide-react'
+import { Upload, FolderOpen, Split, Settings, Download, Link2, Camera, Video, Code, Share2, RotateCw, Crosshair, Maximize, Minimize, View, MapPin, Ruler, BarChart3, Bookmark, Cloud } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { URLInputModal } from '../upload/URLInputModal'
 import { useFullscreen } from '@/hooks/use-fullscreen'
@@ -44,6 +44,8 @@ export function ActionToolbar() {
   const toggleStatsOverlay = useViewerStore((state) => state.toggleStatsOverlay)
   const exportPresetsPanelOpen = useViewerStore((state) => state.exportPresetsPanelOpen)
   const toggleExportPresetsPanel = useViewerStore((state) => state.toggleExportPresetsPanel)
+  const cloudFeaturesPanelOpen = useViewerStore((state) => state.cloudFeaturesPanelOpen)
+  const toggleCloudFeaturesPanel = useViewerStore((state) => state.toggleCloudFeaturesPanel)
 
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
   const { isSupported: arSupported, launchAR, isChecking: arChecking } = useARSupport()
@@ -361,6 +363,20 @@ export function ActionToolbar() {
         ) : (
           <Maximize className={cn('w-5 h-5', theme.iconPrimary)} />
         )}
+      </button>
+
+      {/* Cloud Features Button (Phase 4) */}
+      <button
+        onClick={toggleCloudFeaturesPanel}
+        className={cn(
+          'p-3 transition-all duration-200 active:scale-95 rounded-full',
+          theme.glassPanelDark,
+          theme.hover,
+          cloudFeaturesPanelOpen && 'bg-white/20'
+        )}
+        title="Cloud Features"
+      >
+        <Cloud className={cn('w-5 h-5', theme.iconPrimary)} />
       </button>
 
       {/* Settings Button - Toggle sidebar */}

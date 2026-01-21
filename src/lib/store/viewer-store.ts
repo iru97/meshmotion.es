@@ -111,6 +111,9 @@ interface ViewerState {
   selectedExportPresetId: string | null
   exportPresetsPanelOpen: boolean
 
+  // Cloud Features (Phase 4)
+  cloudFeaturesPanelOpen: boolean
+
   // Actions
   setCharacter: (model: GLTFModel | null) => void
   setAnimation: (clip: THREE.AnimationClip | null) => void
@@ -219,6 +222,9 @@ interface ViewerState {
   removeExportPreset: (id: string) => void
   setSelectedExportPreset: (id: string | null) => void
   toggleExportPresetsPanel: () => void
+
+  // Cloud Features Actions (Phase 4)
+  toggleCloudFeaturesPanel: () => void
 }
 
 export const useViewerStore = create<ViewerState>()(
@@ -304,6 +310,9 @@ export const useViewerStore = create<ViewerState>()(
         exportPresets: [],
         selectedExportPresetId: null,
         exportPresetsPanelOpen: false,
+
+        // Cloud Features (Phase 4)
+        cloudFeaturesPanelOpen: false,
 
         // Actions
         setCharacter: (model) => set({ currentCharacter: model }),
@@ -644,6 +653,10 @@ export const useViewerStore = create<ViewerState>()(
         setSelectedExportPreset: (id) => set({ selectedExportPresetId: id }),
         toggleExportPresetsPanel: () =>
           set((state) => ({ exportPresetsPanelOpen: !state.exportPresetsPanelOpen })),
+
+        // Cloud Features Actions (Phase 4)
+        toggleCloudFeaturesPanel: () =>
+          set((state) => ({ cloudFeaturesPanelOpen: !state.cloudFeaturesPanelOpen })),
       }),
       {
         name: 'viewer-storage',

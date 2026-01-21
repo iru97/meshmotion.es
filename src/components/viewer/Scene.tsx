@@ -36,8 +36,11 @@ import { MeasurementLines } from '../measurements/MeasurementLine'
 import { MeasurementsPanel } from '../measurements/MeasurementsPanel'
 import { StatsOverlay } from '../stats/StatsOverlay'
 import { ExportPresetsPanel } from '../export/ExportPresetsPanel'
+import { CloudFeaturesPanel } from '../cloud/CloudFeaturesPanel'
 
 export default function Scene() {
+  const cloudFeaturesPanelOpen = useViewerStore((state) => state.cloudFeaturesPanelOpen)
+  const toggleCloudFeaturesPanel = useViewerStore((state) => state.toggleCloudFeaturesPanel)
   const environmentPreset = useViewerStore((state) => state.environmentPreset)
   const comparisonEnabled = useViewerStore((state) => state.comparisonMode.enabled)
   const config = environmentPresets[environmentPreset]
@@ -207,6 +210,12 @@ export default function Scene() {
 
       {/* Export Presets Panel */}
       <ExportPresetsPanel />
+
+      {/* Cloud Features Panel (Phase 4) */}
+      <CloudFeaturesPanel
+        isOpen={cloudFeaturesPanelOpen}
+        onClose={toggleCloudFeaturesPanel}
+      />
 
       {/* External URL Load Modal */}
       <ExternalLoadModal

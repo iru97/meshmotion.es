@@ -2,6 +2,15 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import type { GLTF } from 'three-stdlib'
 
+export interface TextureInfo {
+  name: string
+  type: string
+  width: number
+  height: number
+  format: string
+  size: number // estimated bytes
+}
+
 export interface ModelStats {
   vertices: number
   triangles: number
@@ -16,6 +25,10 @@ export interface ModelStats {
     depth: number
   }
   fileSize?: number
+  // Extended stats
+  textureDetails: TextureInfo[]
+  totalTextureMemory: number
+  estimatedMemory: number // Total estimated GPU memory usage
 }
 
 /**
@@ -56,6 +69,37 @@ export function formatDimension(meters: number): string {
 }
 
 /**
+ * Get texture type name from material property
+ */
+function getTextureTypeName(texture: THREE.Texture, mat: THREE.MeshStandardMaterial): string {
+  if (texture === mat.map) return 'Diffuse'
+  if (texture === mat.normalMap) return 'Normal'
+  if (texture === mat.roughnessMap) return 'Roughness'
+  if (texture === mat.metalnessMap) return 'Metalness'
+  if (texture === mat.aoMap) return 'AO'
+  if (texture === mat.emissiveMap) return 'Emissive'
+  return 'Other'
+}
+
+/**
+ * Estimate texture memory size in bytes
+ * Format: RGB = 3 bytes/pixel, RGBA = 4 bytes/pixel
+ * GPU typically stores with mipmaps (~1.33x base size)
+ */
+function estimateTextureMemory(texture: THREE.Texture): number {
+  const image = texture.image
+  if (!image) return 0
+
+  const width = image.width || 0
+  const height = image.height || 0
+  const bytesPerPixel = 4 // Assume RGBA
+  const baseSize = width * height * bytesPerPixel
+  const withMipmaps = baseSize * 1.33 // Mipmaps add ~33%
+
+  return Math.ceil(withMipmaps)
+}
+
+/**
  * Extract statistics from a GLTF model
  */
 export function extractModelStats(gltf: GLTF | null): ModelStats | null {
@@ -64,8 +108,9 @@ export function extractModelStats(gltf: GLTF | null): ModelStats | null {
   let vertices = 0
   let triangles = 0
   let meshes = 0
+  let geometryMemory = 0
   const materialsSet = new Set<THREE.Material>()
-  const texturesSet = new Set<THREE.Texture>()
+  const texturesMap = new Map<THREE.Texture, { type: string; mat: THREE.MeshStandardMaterial }>()
   let bones = 0
 
   gltf.scene.traverse((object) => {
@@ -77,11 +122,15 @@ export function extractModelStats(gltf: GLTF | null): ModelStats | null {
         // Count vertices
         if (geometry.attributes.position) {
           vertices += geometry.attributes.position.count
+
+          // Estimate geometry memory (position + normal + uv = ~32 bytes per vertex)
+          geometryMemory += geometry.attributes.position.count * 32
         }
 
-        // Count triangles
+        // Count triangles and add index buffer memory
         if (geometry.index) {
           triangles += geometry.index.count / 3
+          geometryMemory += geometry.index.count * 4 // 4 bytes per index
         } else if (geometry.attributes.position) {
           triangles += geometry.attributes.position.count / 3
         }
@@ -96,14 +145,19 @@ export function extractModelStats(gltf: GLTF | null): ModelStats | null {
         if (mat) {
           materialsSet.add(mat)
 
-          // Collect textures from material
+          // Collect textures from material with type info
           if (mat instanceof THREE.MeshStandardMaterial) {
-            if (mat.map) texturesSet.add(mat.map)
-            if (mat.normalMap) texturesSet.add(mat.normalMap)
-            if (mat.roughnessMap) texturesSet.add(mat.roughnessMap)
-            if (mat.metalnessMap) texturesSet.add(mat.metalnessMap)
-            if (mat.aoMap) texturesSet.add(mat.aoMap)
-            if (mat.emissiveMap) texturesSet.add(mat.emissiveMap)
+            const addTexture = (tex: THREE.Texture | null) => {
+              if (tex && !texturesMap.has(tex)) {
+                texturesMap.set(tex, { type: getTextureTypeName(tex, mat), mat })
+              }
+            }
+            addTexture(mat.map)
+            addTexture(mat.normalMap)
+            addTexture(mat.roughnessMap)
+            addTexture(mat.metalnessMap)
+            addTexture(mat.aoMap)
+            addTexture(mat.emissiveMap)
           }
         }
       })
@@ -119,12 +173,39 @@ export function extractModelStats(gltf: GLTF | null): ModelStats | null {
   const size = new THREE.Vector3()
   boundingBox.getSize(size)
 
+  // Build texture details
+  const textureDetails: TextureInfo[] = []
+  let totalTextureMemory = 0
+
+  texturesMap.forEach((info, texture) => {
+    const image = texture.image
+    const width = image?.width || 0
+    const height = image?.height || 0
+    const memSize = estimateTextureMemory(texture)
+    totalTextureMemory += memSize
+
+    textureDetails.push({
+      name: texture.name || `Texture ${textureDetails.length + 1}`,
+      type: info.type,
+      width,
+      height,
+      format: texture.format === THREE.RGBAFormat ? 'RGBA' : 'RGB',
+      size: memSize,
+    })
+  })
+
+  // Sort by size descending
+  textureDetails.sort((a, b) => b.size - a.size)
+
+  // Total estimated GPU memory
+  const estimatedMemory = geometryMemory + totalTextureMemory
+
   return {
     vertices,
     triangles: Math.floor(triangles),
     meshes,
     materials: materialsSet.size,
-    textures: texturesSet.size,
+    textures: texturesMap.size,
     bones,
     animations: gltf.animations?.length ?? 0,
     boundingBox: {
@@ -132,6 +213,9 @@ export function extractModelStats(gltf: GLTF | null): ModelStats | null {
       height: size.y,
       depth: size.z,
     },
+    textureDetails,
+    totalTextureMemory,
+    estimatedMemory,
   }
 }
 

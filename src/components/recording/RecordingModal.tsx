@@ -37,6 +37,7 @@ export function RecordingModal() {
   const [videoDuration, setVideoDuration] = useState<VideoDuration>('5s')
   const [quality, setQuality] = useState<VideoQuality>('social')
   const [turntable, setTurntable] = useState(false)
+  const [hideUI, setHideUI] = useState(true)
   const [filename, setFilename] = useState('')
 
   if (!recordingModalOpen) return null
@@ -54,6 +55,7 @@ export function RecordingModal() {
       duration: videoDuration,
       quality,
       turntable,
+      hideUI,
       filename: filename.trim() || undefined,
     })
   }
@@ -193,8 +195,27 @@ export function RecordingModal() {
               </div>
             </div>
 
-            {/* Turntable Option */}
-            <div className="mb-6">
+            {/* Options */}
+            <div className="mb-6 space-y-3">
+              <label className={cn('block text-sm font-medium mb-2', theme.textSecondary)}>
+                Options
+              </label>
+
+              {/* Hide UI */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hideUI}
+                  onChange={(e) => setHideUI(e.target.checked)}
+                  className="w-4 h-4 rounded border-white/20 bg-white/10 text-red-500 focus:ring-red-500 focus:ring-offset-0"
+                />
+                <div>
+                  <span className={cn('text-sm', theme.textPrimary)}>Hide UI elements</span>
+                  <p className={cn('text-xs', theme.textMuted)}>Record only the 3D scene</p>
+                </div>
+              </label>
+
+              {/* Turntable Option */}
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"

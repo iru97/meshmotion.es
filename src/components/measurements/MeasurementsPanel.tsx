@@ -11,6 +11,9 @@ import {
   EyeOff,
   Ruler,
   MousePointer,
+  Download,
+  FileJson,
+  FileSpreadsheet,
 } from 'lucide-react'
 import type { MeasurementUnit } from '@/types/annotations'
 
@@ -42,6 +45,72 @@ export function MeasurementsPanel() {
   const removeMeasurement = useViewerStore((state) => state.removeMeasurement)
   const clearMeasurements = useViewerStore((state) => state.clearMeasurements)
   const currentCharacter = useViewerStore((state) => state.currentCharacter)
+
+  // Export as JSON
+  const handleExportJSON = () => {
+    if (measurements.length === 0) return
+
+    const exportData = {
+      version: '1.0',
+      modelName: currentCharacter?.name || 'unknown',
+      exportedAt: new Date().toISOString(),
+      unit: measurementUnit,
+      measurements: measurements.map((m) => ({
+        id: m.id,
+        label: m.label,
+        value: m.value,
+        formattedValue: formatDistance(m.value, measurementUnit),
+        startPoint: m.startPoint,
+        endPoint: m.endPoint,
+      })),
+    }
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `measurements-${currentCharacter?.name?.replace(/\.(glb|gltf)$/i, '') || 'model'}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  // Export as CSV
+  const handleExportCSV = () => {
+    if (measurements.length === 0) return
+
+    const headers = ['ID', 'Label', 'Value (m)', `Value (${measurementUnit})`, 'Start X', 'Start Y', 'Start Z', 'End X', 'End Y', 'End Z']
+    const rows = measurements.map((m) => [
+      m.id,
+      m.label || '',
+      m.value.toFixed(4),
+      formatDistance(m.value, measurementUnit),
+      m.startPoint[0].toFixed(4),
+      m.startPoint[1].toFixed(4),
+      m.startPoint[2].toFixed(4),
+      m.endPoint[0].toFixed(4),
+      m.endPoint[1].toFixed(4),
+      m.endPoint[2].toFixed(4),
+    ])
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `measurements-${currentCharacter?.name?.replace(/\.(glb|gltf)$/i, '') || 'model'}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
 
   if (!measurementsPanelOpen || !currentCharacter) return null
 
@@ -134,18 +203,49 @@ export function MeasurementsPanel() {
           )}
         </button>
 
-        {measurements.length > 0 && (
-          <button
-            onClick={clearMeasurements}
-            className={cn(
-              'p-1.5 rounded transition-colors ml-auto',
-              'bg-white/10 hover:bg-red-500/20 text-red-400'
-            )}
-            title="Clear all"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        )}
+        <div className="flex items-center gap-1 ml-auto">
+          {/* Export Buttons */}
+          {measurements.length > 0 && (
+            <>
+              <button
+                onClick={handleExportJSON}
+                className={cn(
+                  'p-1.5 rounded transition-colors',
+                  'bg-white/10 hover:bg-white/20',
+                  theme.textSecondary
+                )}
+                title="Export as JSON"
+              >
+                <FileJson className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={handleExportCSV}
+                className={cn(
+                  'p-1.5 rounded transition-colors',
+                  'bg-white/10 hover:bg-white/20',
+                  theme.textSecondary
+                )}
+                title="Export as CSV"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
+
+          {/* Clear Button */}
+          {measurements.length > 0 && (
+            <button
+              onClick={clearMeasurements}
+              className={cn(
+                'p-1.5 rounded transition-colors',
+                'bg-white/10 hover:bg-red-500/20 text-red-400'
+              )}
+              title="Clear all"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Measurement Mode Info */}

@@ -37,6 +37,7 @@ import { MeasurementsPanel } from '../measurements/MeasurementsPanel'
 import { StatsOverlay } from '../stats/StatsOverlay'
 import { ExportPresetsPanel } from '../export/ExportPresetsPanel'
 import { CloudFeaturesPanel } from '../cloud/CloudFeaturesPanel'
+import { FullscreenUIController } from '../fullscreen/FullscreenUIController'
 
 export default function Scene() {
   const cloudFeaturesPanelOpen = useViewerStore((state) => state.cloudFeaturesPanelOpen)
@@ -228,6 +229,9 @@ export default function Scene() {
         onCancel={cancelExternalLoad}
         onClearError={clearError}
       />
+
+      {/* Fullscreen UI Controller */}
+      <FullscreenUIController />
     </div>
   )
 }

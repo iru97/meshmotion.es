@@ -91,7 +91,7 @@ export function ActionToolbar() {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-30 flex items-center gap-2">
+    <div className="fixed top-4 right-4 z-30 flex items-center gap-2 fullscreen-ui-element">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}

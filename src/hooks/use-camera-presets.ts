@@ -146,9 +146,72 @@ export function useCameraPresets() {
     }
   }, [camera, controls])
 
+  /**
+   * Focus camera on a specific position with a good viewing distance
+   */
+  const focusOnPosition = useCallback(
+    (position: [number, number, number], animate = true) => {
+      const targetPoint = new THREE.Vector3(...position)
+
+      // Calculate camera position - offset from the target point
+      // Position camera at a distance looking towards the point
+      const currentDirection = camera.position.clone().sub(targetPoint).normalize()
+      const distance = 3 // Distance from the annotation
+      const cameraPos = targetPoint.clone().add(currentDirection.multiplyScalar(distance))
+
+      // Ensure camera doesn't go below ground
+      if (cameraPos.y < 0.5) {
+        cameraPos.y = 0.5
+      }
+
+      if (animate) {
+        const startPosition = camera.position.clone()
+        const startTarget = controls && 'target' in controls
+          ? (controls as any).target.clone()
+          : new THREE.Vector3(0, 0, 0)
+        const duration = 500 // ms
+        const startTime = Date.now()
+
+        const animateCamera = () => {
+          const elapsed = Date.now() - startTime
+          const progress = Math.min(elapsed / duration, 1)
+
+          // Ease out cubic
+          const eased = 1 - Math.pow(1 - progress, 3)
+
+          camera.position.lerpVectors(startPosition, cameraPos, eased)
+
+          // Update orbit controls target if available
+          if (controls && 'target' in controls) {
+            const orbitControls = controls as any
+            orbitControls.target.lerpVectors(startTarget, targetPoint, eased)
+            orbitControls.update()
+          }
+
+          if (progress < 1) {
+            requestAnimationFrame(animateCamera)
+          }
+        }
+
+        animateCamera()
+      } else {
+        camera.position.copy(cameraPos)
+        camera.lookAt(targetPoint)
+
+        if (controls && 'target' in controls) {
+          const orbitControls = controls as any
+          orbitControls.target.copy(targetPoint)
+          orbitControls.update()
+        }
+      }
+    },
+    [camera, controls]
+  )
+
   return {
     presets: CAMERA_PRESETS,
     goToPreset,
     getCurrentAsPreset,
+    focusOnPosition,
   }
 }

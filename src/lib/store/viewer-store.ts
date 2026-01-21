@@ -24,6 +24,14 @@ import {
   DEFAULT_ANNOTATION_STYLE,
 } from '@/types/annotations'
 
+export interface CustomCameraPreset {
+  id: string
+  name: string
+  position: [number, number, number]
+  target: [number, number, number]
+  createdAt: number
+}
+
 interface ViewerState {
   // Models
   currentCharacter: GLTFModel | null
@@ -79,6 +87,7 @@ interface ViewerState {
   // Turntable
   turntableEnabled: boolean
   turntableSpeed: number
+  turntablePausedByInteraction: boolean
 
   // Fullscreen
   isFullscreen: boolean
@@ -86,6 +95,7 @@ interface ViewerState {
 
   // Camera Presets
   cameraPresetsOpen: boolean
+  customCameraPresets: CustomCameraPreset[]
 
   // Annotations
   annotations: Annotation[]
@@ -184,6 +194,7 @@ interface ViewerState {
   // Turntable Actions
   toggleTurntable: () => void
   setTurntableSpeed: (speed: number) => void
+  setTurntablePausedByInteraction: (paused: boolean) => void
 
   // Fullscreen Actions
   toggleFullscreen: () => void
@@ -191,6 +202,9 @@ interface ViewerState {
 
   // Camera Preset Actions
   toggleCameraPresets: () => void
+  addCustomCameraPreset: (preset: CustomCameraPreset) => void
+  removeCustomCameraPreset: (id: string) => void
+  updateCustomCameraPreset: (id: string, updates: Partial<CustomCameraPreset>) => void
 
   // Annotation Actions
   addAnnotation: (annotation: Annotation) => void
@@ -279,6 +293,7 @@ export const useViewerStore = create<ViewerState>()(
         // Turntable
         turntableEnabled: false,
         turntableSpeed: 1,
+        turntablePausedByInteraction: false,
 
         // Fullscreen
         isFullscreen: false,
@@ -286,6 +301,7 @@ export const useViewerStore = create<ViewerState>()(
 
         // Camera Presets
         cameraPresetsOpen: false,
+        customCameraPresets: [],
 
         // Annotations
         annotations: [],
@@ -575,6 +591,7 @@ export const useViewerStore = create<ViewerState>()(
         toggleTurntable: () =>
           set((state) => ({ turntableEnabled: !state.turntableEnabled })),
         setTurntableSpeed: (speed) => set({ turntableSpeed: speed }),
+        setTurntablePausedByInteraction: (paused) => set({ turntablePausedByInteraction: paused }),
 
         // Fullscreen Actions
         toggleFullscreen: () =>
@@ -584,6 +601,20 @@ export const useViewerStore = create<ViewerState>()(
         // Camera Preset Actions
         toggleCameraPresets: () =>
           set((state) => ({ cameraPresetsOpen: !state.cameraPresetsOpen })),
+        addCustomCameraPreset: (preset) =>
+          set((state) => ({
+            customCameraPresets: [...state.customCameraPresets, preset],
+          })),
+        removeCustomCameraPreset: (id) =>
+          set((state) => ({
+            customCameraPresets: state.customCameraPresets.filter((p) => p.id !== id),
+          })),
+        updateCustomCameraPreset: (id, updates) =>
+          set((state) => ({
+            customCameraPresets: state.customCameraPresets.map((p) =>
+              p.id === id ? { ...p, ...updates } : p
+            ),
+          })),
 
         // Annotation Actions
         addAnnotation: (annotation) =>
@@ -675,6 +706,8 @@ export const useViewerStore = create<ViewerState>()(
             syncPlayback: state.comparisonMode.syncPlayback,
             syncCamera: state.comparisonMode.syncCamera,
           },
+          // Custom Camera Presets
+          customCameraPresets: state.customCameraPresets,
           // Asset Management (persist filter preferences)
           assetFilter: state.assetFilter,
         }),

@@ -11,6 +11,7 @@ export interface VideoRecordingOptions {
   customDuration?: number
   quality: VideoQuality
   turntable: boolean
+  hideUI?: boolean
   filename?: string
 }
 
@@ -49,6 +50,38 @@ export function useVideoRecorder(): UseVideoRecorderReturn {
   const animationFrameRef = useRef<number | null>(null)
   const startTimeRef = useRef<number>(0)
   const durationRef = useRef<number>(0)
+  const hiddenElementsRef = useRef<{ element: HTMLElement; originalDisplay: string }[]>([])
+
+  const hideUIElements = useCallback(() => {
+    // Find the canvas container
+    const canvasContainer = document.querySelector('.canvas-container')
+    if (canvasContainer) {
+      // Hide all direct children except canvas
+      canvasContainer.querySelectorAll(':scope > *:not(canvas)').forEach((el) => {
+        if (el instanceof HTMLElement && el.style.display !== 'none') {
+          hiddenElementsRef.current.push({ element: el, originalDisplay: el.style.display })
+          el.style.display = 'none'
+        }
+      })
+    }
+
+    // Hide fixed UI elements (but not the recording modal itself)
+    document.querySelectorAll('[class*="fixed"]').forEach((el) => {
+      if (el instanceof HTMLElement &&
+          el.style.display !== 'none' &&
+          !el.closest('[data-recording-modal]')) {
+        hiddenElementsRef.current.push({ element: el, originalDisplay: el.style.display })
+        el.style.display = 'none'
+      }
+    })
+  }, [])
+
+  const restoreUIElements = useCallback(() => {
+    hiddenElementsRef.current.forEach(({ element, originalDisplay }) => {
+      element.style.display = originalDisplay
+    })
+    hiddenElementsRef.current = []
+  }, [])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -58,9 +91,10 @@ export function useVideoRecorder(): UseVideoRecorderReturn {
       cancelAnimationFrame(animationFrameRef.current)
       animationFrameRef.current = null
     }
+    restoreUIElements()
     setIsRecording(false)
     setProgress(0)
-  }, [])
+  }, [restoreUIElements])
 
   const startRecording = useCallback(async (options: VideoRecordingOptions): Promise<void> => {
     try {
@@ -69,8 +103,16 @@ export function useVideoRecorder(): UseVideoRecorderReturn {
       setProgress(0)
       chunksRef.current = []
 
+      // Hide UI if requested
+      if (options.hideUI) {
+        hideUIElements()
+        // Small delay to ensure UI is hidden
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      }
+
       const canvas = document.querySelector('canvas') as HTMLCanvasElement | null
       if (!canvas) {
+        restoreUIElements()
         throw new Error('No canvas found. Make sure a 3D model is loaded.')
       }
 
@@ -96,13 +138,13 @@ export function useVideoRecorder(): UseVideoRecorderReturn {
         await recordWebM(canvas, options, targetDuration, qualitySettings)
       }
     } catch (err) {
+      restoreUIElements()
       const errorMessage = err instanceof Error ? err.message : 'Recording failed'
       setError(errorMessage)
       setIsRecording(false)
       setProgress(0)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [hideUIElements, restoreUIElements])
 
   const recordWebM = async (
     canvas: HTMLCanvasElement,

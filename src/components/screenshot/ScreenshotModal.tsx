@@ -29,6 +29,7 @@ export function ScreenshotModal() {
   const [format, setFormat] = useState<ScreenshotFormat>('png')
   const [resolution, setResolution] = useState<ScreenshotResolution>('2x')
   const [transparentBackground, setTransparentBackground] = useState(false)
+  const [hideUI, setHideUI] = useState(true)
   const [filename, setFilename] = useState('')
 
   if (!screenshotModalOpen) return null
@@ -41,6 +42,7 @@ export function ScreenshotModal() {
       format,
       resolution,
       transparentBackground: transparentBackground && format === 'png',
+      hideUI,
       filename: customFilename,
     })
     handleClose()
@@ -129,9 +131,25 @@ export function ScreenshotModal() {
           </div>
         </div>
 
-        {/* Transparent Background (PNG only) */}
-        {format === 'png' && (
-          <div className="mb-6">
+        {/* Options */}
+        <div className="mb-6 space-y-3">
+          <label className={cn('block text-sm font-medium mb-3', theme.textSecondary)}>
+            Options
+          </label>
+
+          {/* Hide UI */}
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hideUI}
+              onChange={(e) => setHideUI(e.target.checked)}
+              className="w-4 h-4 rounded border-white/20 bg-white/10 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+            />
+            <span className={cn('text-sm', theme.textPrimary)}>Hide UI elements</span>
+          </label>
+
+          {/* Transparent Background (PNG only) */}
+          {format === 'png' && (
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -141,8 +159,8 @@ export function ScreenshotModal() {
               />
               <span className={cn('text-sm', theme.textPrimary)}>Transparent background</span>
             </label>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Filename */}
         <div className="mb-6">

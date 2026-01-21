@@ -9,6 +9,7 @@ export interface ScreenshotOptions {
   resolution: ScreenshotResolution
   transparentBackground: boolean
   filename?: string
+  hideUI?: boolean
 }
 
 interface UseScreenshotReturn {
@@ -33,13 +34,63 @@ export function useScreenshot(): UseScreenshotReturn {
   const [error, setError] = useState<string | null>(null)
 
   const takeScreenshot = useCallback(async (options: ScreenshotOptions): Promise<void> => {
+    // Store hidden elements to restore later
+    const hiddenElements: { element: HTMLElement; originalDisplay: string }[] = []
+
+    const hideUIElements = () => {
+      if (!options.hideUI) return
+
+      // UI selectors to hide during screenshot
+      const uiSelectors = [
+        '.canvas-container > div:not(canvas)', // All overlays in canvas container
+        '[class*="fixed"]', // Fixed positioned elements (modals, toolbars)
+      ]
+
+      // Find the canvas container
+      const canvasContainer = document.querySelector('.canvas-container')
+      if (canvasContainer) {
+        // Hide all direct children except canvas
+        canvasContainer.querySelectorAll(':scope > *:not(canvas)').forEach((el) => {
+          if (el instanceof HTMLElement && el.style.display !== 'none') {
+            hiddenElements.push({ element: el, originalDisplay: el.style.display })
+            el.style.display = 'none'
+          }
+        })
+      }
+
+      // Hide fixed UI elements (but not the screenshot modal backdrop/modal itself)
+      document.querySelectorAll('[class*="fixed"]').forEach((el) => {
+        if (el instanceof HTMLElement &&
+            el.style.display !== 'none' &&
+            !el.closest('[data-screenshot-modal]')) {
+          hiddenElements.push({ element: el, originalDisplay: el.style.display })
+          el.style.display = 'none'
+        }
+      })
+    }
+
+    const restoreUIElements = () => {
+      hiddenElements.forEach(({ element, originalDisplay }) => {
+        element.style.display = originalDisplay
+      })
+    }
+
     try {
       setIsCapturing(true)
       setError(null)
 
+      // Hide UI if requested
+      hideUIElements()
+
+      // Small delay to ensure UI is hidden before capture
+      if (options.hideUI) {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      }
+
       // Find the WebGL canvas
       const canvas = document.querySelector('canvas') as HTMLCanvasElement | null
       if (!canvas) {
+        restoreUIElements()
         throw new Error('No canvas found. Make sure a 3D model is loaded.')
       }
 
@@ -78,6 +129,7 @@ export function useScreenshot(): UseScreenshotReturn {
         // Convert to blob and download
         offscreen.toBlob(
           (blob) => {
+            restoreUIElements()
             if (blob) {
               const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')
               const filename = options.filename || `meshmotion-${timestamp}.${options.format}`
@@ -94,6 +146,7 @@ export function useScreenshot(): UseScreenshotReturn {
         // 1x resolution - capture directly from canvas
         canvas.toBlob(
           (blob) => {
+            restoreUIElements()
             if (blob) {
               const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')
               const filename = options.filename || `meshmotion-${timestamp}.${options.format}`
@@ -108,6 +161,7 @@ export function useScreenshot(): UseScreenshotReturn {
         )
       }
     } catch (err) {
+      restoreUIElements()
       const errorMessage = err instanceof Error ? err.message : 'Screenshot failed'
       setError(errorMessage)
       setIsCapturing(false)

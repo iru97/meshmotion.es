@@ -1,42 +1,62 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useViewerStore } from '@/lib/store/viewer-store'
-import * as THREE from 'three'
 
 /**
  * Component that handles turntable rotation inside the Canvas
  * Must be rendered as a child of Canvas
+ *
+ * Rotates the model around Y axis instead of the camera
+ * Supports pause on hover/interaction
  */
 export function TurntableRotation() {
   const turntableEnabled = useViewerStore((state) => state.turntableEnabled)
   const turntableSpeed = useViewerStore((state) => state.turntableSpeed)
-  const { camera } = useThree()
+  const turntablePausedByInteraction = useViewerStore((state) => state.turntablePausedByInteraction)
+  const currentCharacter = useViewerStore((state) => state.currentCharacter)
+  const setTurntablePausedByInteraction = useViewerStore((state) => state.setTurntablePausedByInteraction)
 
-  // Track the pivot point (center of rotation)
-  const pivotRef = useRef(new THREE.Vector3(0, 0, 0))
+  const { gl } = useThree()
+
+  // Handle mouse enter/leave for pause on hover
+  const handleMouseEnter = useCallback(() => {
+    if (turntableEnabled) {
+      setTurntablePausedByInteraction(true)
+    }
+  }, [turntableEnabled, setTurntablePausedByInteraction])
+
+  const handleMouseLeave = useCallback(() => {
+    setTurntablePausedByInteraction(false)
+  }, [setTurntablePausedByInteraction])
+
+  // Setup event listeners for pause on hover
+  useEffect(() => {
+    const canvas = gl.domElement
+    canvas.addEventListener('mouseenter', handleMouseEnter)
+    canvas.addEventListener('mouseleave', handleMouseLeave)
+
+    return () => {
+      canvas.removeEventListener('mouseenter', handleMouseEnter)
+      canvas.removeEventListener('mouseleave', handleMouseLeave)
+    }
+  }, [gl.domElement, handleMouseEnter, handleMouseLeave])
+
+  // Reset pause state when turntable is disabled
+  useEffect(() => {
+    if (!turntableEnabled) {
+      setTurntablePausedByInteraction(false)
+    }
+  }, [turntableEnabled, setTurntablePausedByInteraction])
 
   useFrame((_, delta) => {
-    if (!turntableEnabled) return
+    // Don't rotate if turntable is disabled, paused by interaction, or no model
+    if (!turntableEnabled || turntablePausedByInteraction || !currentCharacter?.scene) return
 
-    // Get current camera position
-    const position = camera.position.clone()
-
-    // Calculate position relative to pivot
-    const relativePos = position.sub(pivotRef.current)
-
-    // Rotate around Y axis
+    // Rotate the model around Y axis
     const rotationSpeed = turntableSpeed * 0.5
-    const angle = delta * rotationSpeed
-    const axis = new THREE.Vector3(0, 1, 0)
-    relativePos.applyAxisAngle(axis, angle)
-
-    // Update camera position
-    camera.position.copy(relativePos.add(pivotRef.current))
-
-    // Make camera look at pivot point
-    camera.lookAt(pivotRef.current)
+    currentCharacter.scene.rotation.y += delta * rotationSpeed
   })
 
   return null

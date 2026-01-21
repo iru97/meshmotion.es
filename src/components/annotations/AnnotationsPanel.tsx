@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
 import { cn } from '@/lib/utils'
@@ -13,8 +13,12 @@ import {
   Edit2,
   MapPin,
   MousePointer,
+  Download,
+  Upload,
+  Focus,
 } from 'lucide-react'
 import type { Annotation } from '@/types/annotations'
+import { focusCameraOnPosition } from '@/components/camera/CameraPresetController'
 
 /**
  * Panel for managing annotations on the 3D model
@@ -34,11 +38,74 @@ export function AnnotationsPanel() {
   const updateAnnotation = useViewerStore((state) => state.updateAnnotation)
   const removeAnnotation = useViewerStore((state) => state.removeAnnotation)
   const clearAnnotations = useViewerStore((state) => state.clearAnnotations)
+  const addAnnotation = useViewerStore((state) => state.addAnnotation)
   const currentCharacter = useViewerStore((state) => state.currentCharacter)
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editLabel, setEditLabel] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Export annotations as JSON
+  const handleExport = () => {
+    if (annotations.length === 0) return
+
+    const exportData = {
+      version: '1.0',
+      modelName: currentCharacter?.name || 'unknown',
+      exportedAt: new Date().toISOString(),
+      annotations: annotations.map((a) => ({
+        id: a.id,
+        label: a.label,
+        description: a.description,
+        position: a.position,
+        style: a.style,
+      })),
+    }
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `annotations-${currentCharacter?.name?.replace(/\.(glb|gltf)$/i, '') || 'model'}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  // Import annotations from JSON
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string)
+        if (data.annotations && Array.isArray(data.annotations)) {
+          // Clear existing and add imported annotations with new IDs
+          clearAnnotations()
+          data.annotations.forEach((ann: Annotation) => {
+            addAnnotation({
+              ...ann,
+              id: `imported-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            })
+          })
+        }
+      } catch (error) {
+        console.error('Failed to parse annotations file:', error)
+      }
+    }
+    reader.readAsText(file)
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
 
   if (!annotationsPanelOpen || !currentCharacter) return null
 
@@ -132,18 +199,56 @@ export function AnnotationsPanel() {
           )}
         </button>
 
-        {annotations.length > 0 && (
+        <div className="flex items-center gap-1 ml-auto">
+          {/* Import Button */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleImport}
+            className="hidden"
+          />
           <button
-            onClick={clearAnnotations}
+            onClick={() => fileInputRef.current?.click()}
             className={cn(
-              'p-1.5 rounded transition-colors ml-auto',
-              'bg-white/10 hover:bg-red-500/20 text-red-400'
+              'p-1.5 rounded transition-colors',
+              'bg-white/10 hover:bg-white/20',
+              theme.textSecondary
             )}
-            title="Clear all"
+            title="Import annotations"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Upload className="w-3.5 h-3.5" />
           </button>
-        )}
+
+          {/* Export Button */}
+          {annotations.length > 0 && (
+            <button
+              onClick={handleExport}
+              className={cn(
+                'p-1.5 rounded transition-colors',
+                'bg-white/10 hover:bg-white/20',
+                theme.textSecondary
+              )}
+              title="Export annotations"
+            >
+              <Download className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Clear Button */}
+          {annotations.length > 0 && (
+            <button
+              onClick={clearAnnotations}
+              className={cn(
+                'p-1.5 rounded transition-colors',
+                'bg-white/10 hover:bg-red-500/20 text-red-400'
+              )}
+              title="Clear all"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Placement Mode Info */}
@@ -241,6 +346,20 @@ export function AnnotationsPanel() {
                     )}
                   </div>
                   <div className="flex gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        focusCameraOnPosition(annotation.position)
+                      }}
+                      className={cn(
+                        'p-1 rounded transition-colors',
+                        'hover:bg-blue-500/20',
+                        theme.textMuted
+                      )}
+                      title="Focus camera on annotation"
+                    >
+                      <Focus className="w-3 h-3" />
+                    </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()

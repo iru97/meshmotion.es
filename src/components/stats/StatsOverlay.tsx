@@ -7,6 +7,7 @@ import {
   extractModelStats,
   formatNumber,
   formatDimension,
+  formatFileSize,
 } from '@/hooks/use-model-stats'
 import {
   X,
@@ -19,8 +20,11 @@ import {
   Play,
   Maximize2,
   BarChart3,
+  HardDrive,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 /**
  * Overlay panel displaying model statistics
@@ -31,6 +35,8 @@ export function StatsOverlay() {
   const showStatsOverlay = useViewerStore((state) => state.showStatsOverlay)
   const toggleStatsOverlay = useViewerStore((state) => state.toggleStatsOverlay)
   const currentCharacter = useViewerStore((state) => state.currentCharacter)
+
+  const [showTextureDetails, setShowTextureDetails] = useState(false)
 
   // Extract stats from the current model
   const stats = useMemo(() => {
@@ -168,6 +174,74 @@ export function StatsOverlay() {
           </div>
         </div>
       </div>
+
+      {/* Memory Estimate */}
+      <div className="mt-3 pt-2 border-t border-white/10">
+        <div className="flex items-center gap-2 mb-2">
+          <HardDrive className={cn('w-3 h-3', theme.textSecondary)} />
+          <span className={cn('text-xs', theme.textMuted)}>Memory Estimate</span>
+        </div>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <span className={cn('text-[10px]', theme.textMuted)}>Total GPU</span>
+            <span className={cn('text-xs font-mono', theme.textPrimary)}>
+              {formatFileSize(stats.estimatedMemory)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className={cn('text-[10px]', theme.textMuted)}>Textures</span>
+            <span className={cn('text-xs font-mono', theme.textPrimary)}>
+              {formatFileSize(stats.totalTextureMemory)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Texture Details (collapsible) */}
+      {stats.textureDetails.length > 0 && (
+        <div className="mt-3 pt-2 border-t border-white/10">
+          <button
+            onClick={() => setShowTextureDetails(!showTextureDetails)}
+            className={cn(
+              'flex items-center gap-1 w-full text-left',
+              'hover:bg-white/5 -mx-1 px-1 rounded transition-colors'
+            )}
+          >
+            {showTextureDetails ? (
+              <ChevronDown className={cn('w-3 h-3', theme.textSecondary)} />
+            ) : (
+              <ChevronRight className={cn('w-3 h-3', theme.textSecondary)} />
+            )}
+            <Image className={cn('w-3 h-3', theme.textSecondary)} />
+            <span className={cn('text-xs', theme.textMuted)}>
+              Texture Details ({stats.textureDetails.length})
+            </span>
+          </button>
+
+          {showTextureDetails && (
+            <div className="mt-2 space-y-1.5 max-h-32 overflow-y-auto">
+              {stats.textureDetails.map((tex, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white/5 rounded px-2 py-1.5 text-[10px]"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={cn('font-medium truncate max-w-[100px]', theme.textPrimary)}>
+                      {tex.type}
+                    </span>
+                    <span className={cn('font-mono', theme.textMuted)}>
+                      {formatFileSize(tex.size)}
+                    </span>
+                  </div>
+                  <div className={cn('mt-0.5', theme.textMuted)}>
+                    {tex.width}×{tex.height} {tex.format}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

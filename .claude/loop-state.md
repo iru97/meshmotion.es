@@ -54,14 +54,41 @@ When backend is ready, connect these endpoints:
 - Profile management
 - Search and filtering
 
+## Additional Enhancements ✅
+
+### Turntable Improvements
+- [x] Fixed turntable to rotate model instead of camera
+- [x] Added pause on hover/interaction
+
+### Screenshot & Recording Enhancements
+- [x] Added Hide UI option for screenshots
+- [x] Added Hide UI option for recordings
+
+### Camera Presets Enhancements
+- [x] Added custom camera presets (save/name/delete)
+- [x] Added camera auto-focus on annotation click
+
+### Annotation & Measurement Enhancements
+- [x] Added annotation export/import as JSON
+- [x] Added measurement export (CSV/JSON)
+
+### Stats Overlay Enhancements
+- [x] Added texture sizes breakdown
+- [x] Added GPU memory usage estimate
+
+### Fullscreen Enhancements
+- [x] Added auto-hide controls on idle (3s timeout)
+
 ## Progress Log
 - 2026-01-20: Phase 1 complete - Sharing features implemented
 - 2026-01-20: Phase 2 complete - View/Presentation features implemented
 - 2026-01-21: Phase 3 complete - Professional features implemented
 - 2026-01-21: Phase 4 prepared - Cloud features UI ready for backend
+- 2026-01-21: Additional enhancements - Gap analysis features implemented
 
 ## Commits
 - Phase 1: feat: add Phase 1 sharing features
 - Phase 2: feat: add Phase 2 viewing/presentation features
 - Phase 3: 1bff726 feat: add Phase 3 professional features
 - Phase 4: 38ce4c8 feat: prepare Phase 4 cloud features infrastructure
+- Enhancements: e68bbfc feat: enhance viewer with additional professional features

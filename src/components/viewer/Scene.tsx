@@ -30,6 +30,12 @@ import { TurntableRotation } from '../turntable/TurntableRotation'
 import { CameraPresetController } from '../camera/CameraPresetController'
 import { CameraPresetsPanel } from '../camera/CameraPresetsPanel'
 import { selectCameraPreset } from '../camera/CameraPresetController'
+import { AnnotationMarkers } from '../annotations/AnnotationMarker'
+import { AnnotationsPanel } from '../annotations/AnnotationsPanel'
+import { MeasurementLines } from '../measurements/MeasurementLine'
+import { MeasurementsPanel } from '../measurements/MeasurementsPanel'
+import { StatsOverlay } from '../stats/StatsOverlay'
+import { ExportPresetsPanel } from '../export/ExportPresetsPanel'
 
 export default function Scene() {
   const environmentPreset = useViewerStore((state) => state.environmentPreset)
@@ -133,6 +139,12 @@ export default function Scene() {
         {/* Camera Preset Controller */}
         <CameraPresetController />
 
+        {/* Annotation Markers */}
+        <AnnotationMarkers />
+
+        {/* Measurement Lines */}
+        <MeasurementLines />
+
         {/* Camera Controls */}
         <OrbitControls
           makeDefault
@@ -183,6 +195,18 @@ export default function Scene() {
 
       {/* Camera Presets Panel */}
       <CameraPresetsPanel onSelectPreset={selectCameraPreset} />
+
+      {/* Annotations Panel */}
+      <AnnotationsPanel />
+
+      {/* Measurements Panel */}
+      <MeasurementsPanel />
+
+      {/* Stats Overlay */}
+      <StatsOverlay />
+
+      {/* Export Presets Panel */}
+      <ExportPresetsPanel />
 
       {/* External URL Load Modal */}
       <ExternalLoadModal

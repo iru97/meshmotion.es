@@ -99,6 +99,15 @@ export function useKeyboardShortcuts() {
         }
       }
 
+      // I - Toggle Stats Overlay (when model loaded)
+      if (key === 'i' && !ctrl && !shift) {
+        const currentCharacter = useViewerStore.getState().currentCharacter
+        if (currentCharacter) {
+          e.preventDefault()
+          useViewerStore.getState().toggleStatsOverlay()
+        }
+      }
+
       // 1-5 - Playback Speed Presets
       if (!ctrl && !shift && ['1', '2', '3', '4', '5'].includes(key)) {
         e.preventDefault()

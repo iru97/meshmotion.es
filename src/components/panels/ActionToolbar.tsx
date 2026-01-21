@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
-import { Upload, FolderOpen, Split, Settings, Download, Link2, Camera, Video, Code, Share2, RotateCw, Crosshair, Maximize, Minimize, View } from 'lucide-react'
+import { Upload, FolderOpen, Split, Settings, Download, Link2, Camera, Video, Code, Share2, RotateCw, Crosshair, Maximize, Minimize, View, MapPin, Ruler, BarChart3, Bookmark } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { URLInputModal } from '../upload/URLInputModal'
 import { useFullscreen } from '@/hooks/use-fullscreen'
@@ -36,6 +36,14 @@ export function ActionToolbar() {
   const cameraPresetsOpen = useViewerStore((state) => state.cameraPresetsOpen)
   const toggleCameraPresets = useViewerStore((state) => state.toggleCameraPresets)
   const minimalUIMode = useViewerStore((state) => state.minimalUIMode)
+  const annotationsPanelOpen = useViewerStore((state) => state.annotationsPanelOpen)
+  const toggleAnnotationsPanel = useViewerStore((state) => state.toggleAnnotationsPanel)
+  const measurementsPanelOpen = useViewerStore((state) => state.measurementsPanelOpen)
+  const toggleMeasurementsPanel = useViewerStore((state) => state.toggleMeasurementsPanel)
+  const showStatsOverlay = useViewerStore((state) => state.showStatsOverlay)
+  const toggleStatsOverlay = useViewerStore((state) => state.toggleStatsOverlay)
+  const exportPresetsPanelOpen = useViewerStore((state) => state.exportPresetsPanelOpen)
+  const toggleExportPresetsPanel = useViewerStore((state) => state.toggleExportPresetsPanel)
 
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
   const { isSupported: arSupported, launchAR, isChecking: arChecking } = useARSupport()
@@ -162,6 +170,22 @@ export function ActionToolbar() {
         </button>
       )}
 
+      {/* Export Presets Button - Only visible when model is loaded */}
+      {currentCharacter && (
+        <button
+          onClick={toggleExportPresetsPanel}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover,
+            exportPresetsPanelOpen && 'bg-white/20'
+          )}
+          title="Export Presets"
+        >
+          <Bookmark className={cn('w-5 h-5', theme.iconPrimary)} />
+        </button>
+      )}
+
       {/* Turntable Button - Only visible when model is loaded */}
       {currentCharacter && (
         <button
@@ -191,6 +215,54 @@ export function ActionToolbar() {
           title="Camera Views (V)"
         >
           <Crosshair className={cn('w-5 h-5', theme.iconPrimary)} />
+        </button>
+      )}
+
+      {/* Annotations Button - Only visible when model is loaded */}
+      {currentCharacter && (
+        <button
+          onClick={toggleAnnotationsPanel}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover,
+            annotationsPanelOpen && 'bg-white/20'
+          )}
+          title="Annotations"
+        >
+          <MapPin className={cn('w-5 h-5', theme.iconPrimary)} />
+        </button>
+      )}
+
+      {/* Measurements Button - Only visible when model is loaded */}
+      {currentCharacter && (
+        <button
+          onClick={toggleMeasurementsPanel}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover,
+            measurementsPanelOpen && 'bg-white/20'
+          )}
+          title="Measurements"
+        >
+          <Ruler className={cn('w-5 h-5', theme.iconPrimary)} />
+        </button>
+      )}
+
+      {/* Stats Overlay Button - Only visible when model is loaded */}
+      {currentCharacter && (
+        <button
+          onClick={toggleStatsOverlay}
+          className={cn(
+            'p-3 transition-all duration-200 active:scale-95 rounded-full',
+            theme.glassPanelDark,
+            theme.hover,
+            showStatsOverlay && 'bg-white/20'
+          )}
+          title="Model Stats (I)"
+        >
+          <BarChart3 className={cn('w-5 h-5', theme.iconPrimary)} />
         </button>
       )}
 

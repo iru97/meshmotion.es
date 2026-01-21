@@ -8,6 +8,21 @@ import type { ComparisonState, ComparisonLayout } from '@/types/comparison'
 import type { AssetFilter } from '@/types/assets'
 import { DEFAULT_COMPARISON_STATE, DEFAULT_VIEW_STATE } from '@/types/comparison'
 import { DEFAULT_ASSET_FILTER } from '@/types/assets'
+import type {
+  Annotation,
+  AnnotationsState,
+  Measurement,
+  MeasurementsState,
+  ExportPreset,
+  ExportPresetsState,
+  MeasurementUnit,
+} from '@/types/annotations'
+import {
+  DEFAULT_ANNOTATIONS_STATE,
+  DEFAULT_MEASUREMENTS_STATE,
+  DEFAULT_EXPORT_PRESETS_STATE,
+  DEFAULT_ANNOTATION_STYLE,
+} from '@/types/annotations'
 
 interface ViewerState {
   // Models
@@ -71,6 +86,30 @@ interface ViewerState {
 
   // Camera Presets
   cameraPresetsOpen: boolean
+
+  // Annotations
+  annotations: Annotation[]
+  selectedAnnotationId: string | null
+  isAnnotationPlacementMode: boolean
+  showAnnotations: boolean
+  annotationsPanelOpen: boolean
+
+  // Measurements
+  measurements: Measurement[]
+  selectedMeasurementId: string | null
+  isMeasurementMode: boolean
+  measurementType: 'distance' | 'angle'
+  showMeasurements: boolean
+  measurementsPanelOpen: boolean
+  measurementUnit: MeasurementUnit
+
+  // Stats Overlay
+  showStatsOverlay: boolean
+
+  // Export Presets
+  exportPresets: ExportPreset[]
+  selectedExportPresetId: string | null
+  exportPresetsPanelOpen: boolean
 
   // Actions
   setCharacter: (model: GLTFModel | null) => void
@@ -149,6 +188,37 @@ interface ViewerState {
 
   // Camera Preset Actions
   toggleCameraPresets: () => void
+
+  // Annotation Actions
+  addAnnotation: (annotation: Annotation) => void
+  updateAnnotation: (id: string, updates: Partial<Annotation>) => void
+  removeAnnotation: (id: string) => void
+  setSelectedAnnotation: (id: string | null) => void
+  toggleAnnotationPlacementMode: () => void
+  toggleShowAnnotations: () => void
+  toggleAnnotationsPanel: () => void
+  clearAnnotations: () => void
+
+  // Measurement Actions
+  addMeasurement: (measurement: Measurement) => void
+  updateMeasurement: (id: string, updates: Partial<Measurement>) => void
+  removeMeasurement: (id: string) => void
+  setSelectedMeasurement: (id: string | null) => void
+  toggleMeasurementMode: () => void
+  setMeasurementType: (type: 'distance' | 'angle') => void
+  toggleShowMeasurements: () => void
+  toggleMeasurementsPanel: () => void
+  setMeasurementUnit: (unit: MeasurementUnit) => void
+  clearMeasurements: () => void
+
+  // Stats Overlay Actions
+  toggleStatsOverlay: () => void
+
+  // Export Preset Actions
+  addExportPreset: (preset: ExportPreset) => void
+  removeExportPreset: (id: string) => void
+  setSelectedExportPreset: (id: string | null) => void
+  toggleExportPresetsPanel: () => void
 }
 
 export const useViewerStore = create<ViewerState>()(
@@ -210,6 +280,30 @@ export const useViewerStore = create<ViewerState>()(
 
         // Camera Presets
         cameraPresetsOpen: false,
+
+        // Annotations
+        annotations: [],
+        selectedAnnotationId: null,
+        isAnnotationPlacementMode: false,
+        showAnnotations: true,
+        annotationsPanelOpen: false,
+
+        // Measurements
+        measurements: [],
+        selectedMeasurementId: null,
+        isMeasurementMode: false,
+        measurementType: 'distance',
+        showMeasurements: true,
+        measurementsPanelOpen: false,
+        measurementUnit: 'm',
+
+        // Stats Overlay
+        showStatsOverlay: false,
+
+        // Export Presets
+        exportPresets: [],
+        selectedExportPresetId: null,
+        exportPresetsPanelOpen: false,
 
         // Actions
         setCharacter: (model) => set({ currentCharacter: model }),
@@ -481,6 +575,75 @@ export const useViewerStore = create<ViewerState>()(
         // Camera Preset Actions
         toggleCameraPresets: () =>
           set((state) => ({ cameraPresetsOpen: !state.cameraPresetsOpen })),
+
+        // Annotation Actions
+        addAnnotation: (annotation) =>
+          set((state) => ({ annotations: [...state.annotations, annotation] })),
+        updateAnnotation: (id, updates) =>
+          set((state) => ({
+            annotations: state.annotations.map((a) =>
+              a.id === id ? { ...a, ...updates } : a
+            ),
+          })),
+        removeAnnotation: (id) =>
+          set((state) => ({
+            annotations: state.annotations.filter((a) => a.id !== id),
+            selectedAnnotationId:
+              state.selectedAnnotationId === id ? null : state.selectedAnnotationId,
+          })),
+        setSelectedAnnotation: (id) => set({ selectedAnnotationId: id }),
+        toggleAnnotationPlacementMode: () =>
+          set((state) => ({ isAnnotationPlacementMode: !state.isAnnotationPlacementMode })),
+        toggleShowAnnotations: () =>
+          set((state) => ({ showAnnotations: !state.showAnnotations })),
+        toggleAnnotationsPanel: () =>
+          set((state) => ({ annotationsPanelOpen: !state.annotationsPanelOpen })),
+        clearAnnotations: () =>
+          set({ annotations: [], selectedAnnotationId: null }),
+
+        // Measurement Actions
+        addMeasurement: (measurement) =>
+          set((state) => ({ measurements: [...state.measurements, measurement] })),
+        updateMeasurement: (id, updates) =>
+          set((state) => ({
+            measurements: state.measurements.map((m) =>
+              m.id === id ? { ...m, ...updates } : m
+            ),
+          })),
+        removeMeasurement: (id) =>
+          set((state) => ({
+            measurements: state.measurements.filter((m) => m.id !== id),
+            selectedMeasurementId:
+              state.selectedMeasurementId === id ? null : state.selectedMeasurementId,
+          })),
+        setSelectedMeasurement: (id) => set({ selectedMeasurementId: id }),
+        toggleMeasurementMode: () =>
+          set((state) => ({ isMeasurementMode: !state.isMeasurementMode })),
+        setMeasurementType: (type) => set({ measurementType: type }),
+        toggleShowMeasurements: () =>
+          set((state) => ({ showMeasurements: !state.showMeasurements })),
+        toggleMeasurementsPanel: () =>
+          set((state) => ({ measurementsPanelOpen: !state.measurementsPanelOpen })),
+        setMeasurementUnit: (unit) => set({ measurementUnit: unit }),
+        clearMeasurements: () =>
+          set({ measurements: [], selectedMeasurementId: null }),
+
+        // Stats Overlay Actions
+        toggleStatsOverlay: () =>
+          set((state) => ({ showStatsOverlay: !state.showStatsOverlay })),
+
+        // Export Preset Actions
+        addExportPreset: (preset) =>
+          set((state) => ({ exportPresets: [...state.exportPresets, preset] })),
+        removeExportPreset: (id) =>
+          set((state) => ({
+            exportPresets: state.exportPresets.filter((p) => p.id !== id),
+            selectedExportPresetId:
+              state.selectedExportPresetId === id ? null : state.selectedExportPresetId,
+          })),
+        setSelectedExportPreset: (id) => set({ selectedExportPresetId: id }),
+        toggleExportPresetsPanel: () =>
+          set((state) => ({ exportPresetsPanelOpen: !state.exportPresetsPanelOpen })),
       }),
       {
         name: 'viewer-storage',

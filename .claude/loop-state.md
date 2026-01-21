@@ -1,27 +1,29 @@
 # Loop Implementation State
 
-## Status: COMPLETE
+## Status: IN_PROGRESS
 
 ## Original Request
-> Implement Phase 2 viewing/presentation features from the roadmap: turntable mode, camera presets, fullscreen, and AR support
+> Implement Phase 3 professional features from the roadmap: annotations, measurements, stats overlay, and export presets
 
 ## Requirements
-- Scope: Phase 2 - Mobile & Presentation features
+- Scope: Phase 3 - Professional/Explain features
 - Success Criteria: All 4 features working, TypeScript passes, lint passes
 - Constraints: Browser-only (no backend), performance-first, follow existing patterns
 
 ## Tasks
-- [x] [1/8] Turntable Mode: Add turntable state to store
-- [x] [2/8] Turntable Mode: Create turntable hook with rotation logic
-- [x] [3/8] Turntable Mode: Add turntable toggle to UI
-- [x] [4/8] Camera Presets: Add preset views (front/side/top/back)
-- [x] [5/8] Camera Presets: Create camera preset panel UI
-- [x] [6/8] Fullscreen: Add fullscreen hook and button
-- [x] [7/8] Fullscreen: Implement minimal UI mode for fullscreen
-- [x] [8/8] AR Quick Look: Add WebXR/AR button for supported devices
+- [x] [1/10] Annotations: Add annotation types and store state
+- [x] [2/10] Annotations: Create annotation placement hook with raycasting
+- [x] [3/10] Annotations: Create AnnotationMarker component (3D hotspots)
+- [x] [4/10] Annotations: Create AnnotationsPanel for editing/managing
+- [ ] [5/10] Measurements: Create measurement hook with raycasting
+- [ ] [6/10] Measurements: Create MeasurementLine component
+- [ ] [7/10] Measurements: Create MeasurementsPanel UI
+- [ ] [8/10] Stats Overlay: Create ModelStatsOverlay component
+- [ ] [9/10] Export Presets: Add export preset state to store
+- [ ] [10/10] Export Presets: Create ExportPresetsPanel UI
 
 ## Progress Log
 - 2026-01-20: Phase 1 complete - Sharing features implemented
-- 2026-01-20: Phase 2 started - View/Presentation features
-- 2026-01-20: Phase 2 complete - All 8 tasks finished and pushed
+- 2026-01-20: Phase 2 complete - View/Presentation features implemented
+- 2026-01-21: Phase 3 started - Professional features
 

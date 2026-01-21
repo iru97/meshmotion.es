@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useViewerStore } from '@/lib/store/viewer-store'
 import { useThemeClasses } from '@/hooks/use-theme-classes'
 import { useTemporaryLinks } from '@/hooks/use-temporary-links'
+import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
 import {
   X,
@@ -41,6 +42,7 @@ interface TemporaryLinksPanelProps {
 export function TemporaryLinksPanel({ isOpen, onClose }: TemporaryLinksPanelProps) {
   const theme = useThemeClasses()
   const currentCharacter = useViewerStore((state) => state.currentCharacter)
+  const { user } = useAuth()
 
   const {
     links,
@@ -67,13 +69,13 @@ export function TemporaryLinksPanel({ isOpen, onClose }: TemporaryLinksPanelProp
   if (!isOpen) return null
 
   const handleCreate = async () => {
-    if (!currentCharacter) return
+    if (!currentCharacter || !user) return
 
     // For now, show the preview URL that would be generated
     const previewUrl = generatePreviewUrl(settings)
     console.log('Preview URL:', previewUrl)
 
-    await createLink({
+    await createLink(user.id, {
       modelFile: new Blob(), // Would be the actual model
       modelName: currentCharacter.name,
       expiry,
@@ -302,7 +304,7 @@ export function TemporaryLinksPanel({ isOpen, onClose }: TemporaryLinksPanelProp
                     </div>
                   </div>
                   <button
-                    onClick={() => deleteLink(link.id)}
+                    onClick={() => user && deleteLink(user.id, link.id, link.shortCode)}
                     className="p-1 rounded hover:bg-red-500/20 text-red-400"
                   >
                     <Trash2 className="w-3 h-3" />

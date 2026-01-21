@@ -26,6 +26,7 @@
     "@react-three/drei": "^10.7.0",
     "@react-three/fiber": "^9.4.0",
     "@react-three/postprocessing": "^3.0.4",
+    "@supabase/supabase-js": "^2.91.0",
     "assimpjs": "^0.0.10",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",

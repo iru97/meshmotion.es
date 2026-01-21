@@ -3,7 +3,7 @@
 ## Status: COMPLETE
 
 ## Summary
-All phases from the feature roadmap have been implemented or prepared.
+All phases from the feature roadmap have been implemented. Phase 4 cloud features have been migrated to Supabase.
 
 ## Completed Phases
 
@@ -25,34 +25,30 @@ All phases from the feature roadmap have been implemented or prepared.
 - [x] Model Stats Overlay (StatsOverlay)
 - [x] Export Presets (ExportPresetsPanel)
 
-### Phase 4: SCALE IT ✅ (Client-side prepared, awaiting backend)
-- [x] Cloud Storage UI (CloudStoragePanel) - needs OAuth backend
-- [x] Temporary Links UI (TemporaryLinksPanel) - needs CDN backend
-- [x] Collaborative Viewing UI (CollaborativePanel) - needs WebSocket backend
-- [x] Gallery/Profile UI (GalleryPanel) - needs API backend
+### Phase 4: SCALE IT ✅ (Supabase Integration)
+- [x] Cloud Storage (CloudStoragePanel + useCloudStorage) - Supabase Storage
+- [x] Temporary Links (TemporaryLinksPanel + useTemporaryLinks) - Supabase Storage + signed URLs
+- [x] Gallery/Profile (GalleryPanel + useGallery) - Supabase Database
+- [x] Authentication (useAuth) - Supabase Auth
+- [x] ~~Collaborative Viewing~~ - REMOVED (too complex for initial release)
 
-## Phase 4 Backend Requirements
-When backend is ready, connect these endpoints:
+## Supabase Configuration Required
 
-### Cloud Storage
-- OAuth endpoints for Google Drive, Dropbox, OneDrive
-- File listing, upload, download APIs
+To enable Phase 4 features, set these environment variables:
 
-### Temporary Links
-- CDN upload endpoint (Cloudflare R2, S3, etc.)
-- Short URL generation service
-- Link management API
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-### Collaborative Viewing
-- WebSocket server for real-time sync
-- Session management API
-- Participant tracking
+### Database Tables Required
+- `profiles` - User profiles (id, username, display_name, avatar_url, bio)
+- `models` - Uploaded models (user_id, name, description, file_path, file_size, is_public, tags, view_count)
+- `temporary_links` - Shareable links (user_id, model_id, short_code, expires_at, max_views, view_count)
 
-### Gallery
-- Model upload/storage API
-- User authentication
-- Profile management
-- Search and filtering
+### Storage Buckets Required
+- `models` - For permanent model storage
+- `temporary-models` - For temporary shareable links
 
 ## Additional Enhancements ✅
 
@@ -85,6 +81,7 @@ When backend is ready, connect these endpoints:
 - 2026-01-21: Phase 3 complete - Professional features implemented
 - 2026-01-21: Phase 4 prepared - Cloud features UI ready for backend
 - 2026-01-21: Additional enhancements - Gap analysis features implemented
+- 2026-01-21: Supabase migration - Cloud features now use Supabase backend
 
 ## Commits
 - Phase 1: feat: add Phase 1 sharing features
@@ -92,3 +89,4 @@ When backend is ready, connect these endpoints:
 - Phase 3: 1bff726 feat: add Phase 3 professional features
 - Phase 4: 38ce4c8 feat: prepare Phase 4 cloud features infrastructure
 - Enhancements: e68bbfc feat: enhance viewer with additional professional features
+- Supabase: feat: migrate Phase 4 cloud features to Supabase

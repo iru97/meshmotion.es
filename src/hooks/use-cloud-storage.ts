@@ -1,131 +1,304 @@
+'use client'
+
 import { useState, useCallback } from 'react'
-import type {
-  CloudProvider,
-  CloudProviderConfig,
-  CloudFile,
-  CloudStorageState,
-  DEFAULT_CLOUD_STORAGE_STATE,
-} from '@/types/cloud'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase/client'
+import type { Model } from '@/lib/supabase/types'
+
+const STORAGE_BUCKET = 'models'
+
+interface CloudFile {
+  id: string
+  name: string
+  size: number
+  type: 'model' | 'thumbnail'
+  path: string
+  url: string | null
+  createdAt: string
+  isPublic: boolean
+}
+
+interface CloudStorageState {
+  files: CloudFile[]
+  isLoading: boolean
+  error: string | null
+  uploadProgress: number
+}
 
 /**
- * Hook for cloud storage integration
- * Currently returns mock data - will connect to real API when backend is ready
+ * Hook for cloud storage integration with Supabase
  */
 export function useCloudStorage() {
   const [state, setState] = useState<CloudStorageState>({
-    providers: [
-      { id: 'google-drive', name: 'Google Drive', icon: 'google', connected: false },
-      { id: 'dropbox', name: 'Dropbox', icon: 'dropbox', connected: false },
-      { id: 'onedrive', name: 'OneDrive', icon: 'microsoft', connected: false },
-    ],
-    currentProvider: null,
-    currentFolder: null,
     files: [],
     isLoading: false,
     error: null,
-    searchQuery: '',
+    uploadProgress: 0,
   })
 
   /**
-   * Connect to a cloud provider
-   * TODO: Implement OAuth flow when backend is ready
+   * Check if storage is available
    */
-  const connect = useCallback(async (provider: CloudProvider): Promise<boolean> => {
+  const isAvailable = isSupabaseConfigured
+
+  /**
+   * List user's uploaded models
+   */
+  const listFiles = useCallback(async (userId: string): Promise<CloudFile[]> => {
+    if (!supabase) {
+      setState((s) => ({ ...s, error: 'Supabase not configured' }))
+      return []
+    }
+
     setState((s) => ({ ...s, isLoading: true, error: null }))
 
-    // Mock: Show not available message
-    setState((s) => ({
-      ...s,
-      isLoading: false,
-      error: `Cloud storage integration requires backend. Coming soon!`,
-    }))
+    try {
+      const { data: models, error } = await (supabase
+        .from('models') as any)
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
 
-    return false
-  }, [])
+      if (error) throw error
 
-  /**
-   * Disconnect from a cloud provider
-   */
-  const disconnect = useCallback(async (provider: CloudProvider): Promise<void> => {
-    setState((s) => ({
-      ...s,
-      providers: s.providers.map((p) =>
-        p.id === provider ? { ...p, connected: false, email: undefined, quota: undefined } : p
-      ),
-      currentProvider: s.currentProvider === provider ? null : s.currentProvider,
-      files: s.currentProvider === provider ? [] : s.files,
-    }))
-  }, [])
-
-  /**
-   * List files in a folder
-   */
-  const listFiles = useCallback(
-    async (provider: CloudProvider, folderId?: string): Promise<CloudFile[]> => {
-      setState((s) => ({ ...s, isLoading: true, error: null }))
-
-      // Mock: Return empty array with message
-      setState((s) => ({
-        ...s,
-        isLoading: false,
-        files: [],
-        error: 'Connect to a cloud provider to browse files',
+      const files: CloudFile[] = (models || []).map((model: Model) => ({
+        id: model.id,
+        name: model.name,
+        size: model.file_size,
+        type: 'model' as const,
+        path: model.file_path,
+        url: null, // Will be fetched on demand
+        createdAt: model.created_at,
+        isPublic: model.is_public,
       }))
 
+      setState((s) => ({ ...s, files, isLoading: false }))
+      return files
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to list files'
+      setState((s) => ({ ...s, error: message, isLoading: false }))
       return []
-    },
-    []
-  )
+    }
+  }, [])
 
   /**
-   * Upload a file to cloud storage
+   * Upload a model file to Supabase Storage
    */
   const uploadFile = useCallback(
-    async (provider: CloudProvider, file: File, folderId?: string): Promise<CloudFile | null> => {
-      setState((s) => ({ ...s, isLoading: true, error: null }))
+    async (
+      userId: string,
+      file: File,
+      options: { name?: string; description?: string; isPublic?: boolean } = {}
+    ): Promise<CloudFile | null> => {
+      if (!supabase) {
+        setState((s) => ({ ...s, error: 'Supabase not configured' }))
+        return null
+      }
 
-      setState((s) => ({
-        ...s,
-        isLoading: false,
-        error: 'Cloud upload requires backend integration. Coming soon!',
-      }))
+      setState((s) => ({ ...s, isLoading: true, error: null, uploadProgress: 0 }))
 
-      return null
+      try {
+        // Generate unique file path
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
+
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false,
+          })
+
+        if (uploadError) throw uploadError
+
+        setState((s) => ({ ...s, uploadProgress: 50 }))
+
+        // Create model record
+        const { data: model, error: dbError } = await (supabase
+          .from('models') as any)
+          .insert({
+            user_id: userId,
+            name: options.name || file.name.replace(/\.[^/.]+$/, ''),
+            description: options.description || null,
+            file_path: fileName,
+            file_size: file.size,
+            is_public: options.isPublic ?? false,
+            tags: [],
+          })
+          .select()
+          .single()
+
+        if (dbError) throw dbError
+
+        setState((s) => ({ ...s, uploadProgress: 100, isLoading: false }))
+
+        const cloudFile: CloudFile = {
+          id: model.id,
+          name: model.name,
+          size: model.file_size,
+          type: 'model',
+          path: model.file_path,
+          url: null,
+          createdAt: model.created_at,
+          isPublic: model.is_public,
+        }
+
+        // Add to local state
+        setState((s) => ({ ...s, files: [cloudFile, ...s.files] }))
+
+        return cloudFile
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Upload failed'
+        setState((s) => ({ ...s, error: message, isLoading: false, uploadProgress: 0 }))
+        return null
+      }
     },
     []
   )
 
   /**
-   * Download a file from cloud storage
+   * Get download URL for a file
+   */
+  const getDownloadUrl = useCallback(
+    async (filePath: string, expiresIn = 3600): Promise<string | null> => {
+      if (!supabase) return null
+
+      try {
+        const { data, error } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .createSignedUrl(filePath, expiresIn)
+
+        if (error) throw error
+        return data.signedUrl
+      } catch (error) {
+        console.error('Failed to get download URL:', error)
+        return null
+      }
+    },
+    []
+  )
+
+  /**
+   * Download a file as Blob
    */
   const downloadFile = useCallback(
-    async (provider: CloudProvider, fileId: string): Promise<Blob | null> => {
+    async (filePath: string): Promise<Blob | null> => {
+      if (!supabase) {
+        setState((s) => ({ ...s, error: 'Supabase not configured' }))
+        return null
+      }
+
       setState((s) => ({ ...s, isLoading: true, error: null }))
 
-      setState((s) => ({
-        ...s,
-        isLoading: false,
-        error: 'Cloud download requires backend integration. Coming soon!',
-      }))
+      try {
+        const { data, error } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .download(filePath)
 
-      return null
+        if (error) throw error
+
+        setState((s) => ({ ...s, isLoading: false }))
+        return data
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Download failed'
+        setState((s) => ({ ...s, error: message, isLoading: false }))
+        return null
+      }
     },
     []
   )
 
   /**
-   * Set current provider
+   * Delete a model and its file
    */
-  const setCurrentProvider = useCallback((provider: CloudProvider | null) => {
-    setState((s) => ({ ...s, currentProvider: provider }))
-  }, [])
+  const deleteFile = useCallback(
+    async (modelId: string, filePath: string): Promise<boolean> => {
+      if (!supabase) {
+        setState((s) => ({ ...s, error: 'Supabase not configured' }))
+        return false
+      }
+
+      setState((s) => ({ ...s, isLoading: true, error: null }))
+
+      try {
+        // Delete from storage
+        const { error: storageError } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .remove([filePath])
+
+        if (storageError) throw storageError
+
+        // Delete model record
+        const { error: dbError } = await (supabase
+          .from('models') as any)
+          .delete()
+          .eq('id', modelId)
+
+        if (dbError) throw dbError
+
+        // Remove from local state
+        setState((s) => ({
+          ...s,
+          files: s.files.filter((f) => f.id !== modelId),
+          isLoading: false,
+        }))
+
+        return true
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Delete failed'
+        setState((s) => ({ ...s, error: message, isLoading: false }))
+        return false
+      }
+    },
+    []
+  )
 
   /**
-   * Set search query
+   * Update model metadata
    */
-  const setSearchQuery = useCallback((query: string) => {
-    setState((s) => ({ ...s, searchQuery: query }))
-  }, [])
+  const updateModel = useCallback(
+    async (
+      modelId: string,
+      updates: { name?: string; description?: string; isPublic?: boolean; tags?: string[] }
+    ): Promise<boolean> => {
+      if (!supabase) {
+        setState((s) => ({ ...s, error: 'Supabase not configured' }))
+        return false
+      }
+
+      try {
+        const { error } = await (supabase
+          .from('models') as any)
+          .update({
+            name: updates.name,
+            description: updates.description,
+            is_public: updates.isPublic,
+            tags: updates.tags,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', modelId)
+
+        if (error) throw error
+
+        // Update local state
+        setState((s) => ({
+          ...s,
+          files: s.files.map((f) =>
+            f.id === modelId
+              ? { ...f, name: updates.name ?? f.name, isPublic: updates.isPublic ?? f.isPublic }
+              : f
+          ),
+        }))
+
+        return true
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Update failed'
+        setState((s) => ({ ...s, error: message }))
+        return false
+      }
+    },
+    []
+  )
 
   /**
    * Clear error
@@ -134,21 +307,15 @@ export function useCloudStorage() {
     setState((s) => ({ ...s, error: null }))
   }, [])
 
-  /**
-   * Check if cloud features are available
-   */
-  const isAvailable = false // Will be true when backend is ready
-
   return {
     ...state,
     isAvailable,
-    connect,
-    disconnect,
     listFiles,
     uploadFile,
     downloadFile,
-    setCurrentProvider,
-    setSearchQuery,
+    getDownloadUrl,
+    deleteFile,
+    updateModel,
     clearError,
   }
 }

@@ -1,12 +1,12 @@
 # Deep Feature Research: MeshMotion Biomechanics Visualization
 
 ## Session State (Auto-Resume)
-**Last Updated**: 2026-01-30T21:45:00
-**Current Phase**: ALL FEATURES (Initial Research Pass)
-**Current Subphase**: Findings documented
+**Last Updated**: 2026-01-30T22:15:00
+**Current Phase**: ALL FEATURES (Deep Research Pass 2)
+**Current Subphase**: Cross-cutting findings complete
 **Status**: IN_PROGRESS
-**Sessions Used**: 1
-**Subphases Completed**: ~120 (Initial research for all 12 features)
+**Sessions Used**: 2
+**Subphases Completed**: ~180 (Deep research on interaction, tech, accessibility)
 
 ---
 
@@ -1748,6 +1748,151 @@ window.parent.postMessage({event: 'timeUpdate', time: 5.2}, parentOrigin);
 
 ---
 
+### Accessibility & Keyboard Navigation
+
+**WebGL Accessibility Challenges:**
+- Canvas creates "black box" for screen readers
+- Assistive tech doesn't understand pixel content
+- Solution: Shadow DOM with accessible elements behind canvas
+
+**WCAG Contrast:**
+- AA minimum: 4.5:1 ratio
+- AAA minimum: 7:1 ratio
+- Can enforce with fragment shader on backgrounds
+
+**Keyboard Navigation:**
+- Tab through interactive elements
+- Shortkeys: h (headings), t (tables), g (graphics)
+- Enter/Space to activate
+- Arrow keys for frame stepping
+
+**Mobile Accessibility:**
+- VoiceOver (iOS) / TalkBack (Android) use touch gestures
+- Must provide button alternatives for keyboard shortcuts
+- Rotor-based navigation instead of keyboard focus
+
+**Testing Tools:**
+- NVDA + Firefox/Chrome (best combo)
+- stats-gl for performance monitoring
+- Spector.js for WebGL frame capture
+
+---
+
+### Three.js Performance Optimization
+
+**Draw Calls Target:**
+- Under 100 for smooth 60fps
+- Each mesh = 1 draw call
+- 100k trees instanced = 1 draw call (better than 100 unique objects)
+
+**Instancing:**
+- InstancedMesh for repeated objects
+- BatchedMesh for same material, different geometry
+- BufferGeometryUtils.merge() for static geometry
+
+**Memory Management:**
+- ALWAYS call .dispose() on unused resources
+- Textures: Use power-of-2 dimensions (128, 256, 512, 1024)
+- JPG vs PNG: Same GPU memory, different file size
+- KTX2 compressed textures: Half memory usage
+
+**Profiling Tools:**
+- stats-gl: FPS/CPU/GPU monitoring
+- renderer.info: Memory and draw call stats
+- lil-gui: Live parameter tweaking
+- Browser DevTools Performance tab
+
+---
+
+### Timeline Scrubbing UX
+
+**Thumbnail Previews:**
+- Storyboard: Grid of thumbnails from video frames
+- Show on hover over timeline
+- Calculate timestamp from cursor position
+- Display appropriate tile from spritesheet
+
+**Best Practices:**
+- Make it optional/configurable
+- Mobile: Show timestamp only (no thumbnail under 640px)
+- Edge cases: Fix thumbnail at video boundaries
+- Variable speed: Playback speed adjusts with drag speed
+
+**Keyboard Shortcuts (Standard):**
+- J/K/L: Reverse/Pause/Forward
+- Arrow keys: Frame-by-frame
+- Space: Play/pause
+
+---
+
+### URL State Management (React)
+
+**Methods:**
+- history.push({ pathname, search, state })
+- useLocation() for reading current URL
+- useParams() for dynamic segments
+- useSearchParams() for query parameters
+
+**Best Practices:**
+- URL as source of truth (not local state)
+- Use 'qs' library for query param operations
+- Sync state on mount and on URL change
+- useUrlState hook (Alibaba pattern)
+
+**pushState Limitations:**
+- Must be same origin
+- State object must be serializable
+- React Router v6 uses own state system
+
+---
+
+### MediaPipe Pose Smoothing
+
+**Jitter Problem:**
+- Raw landmark data is noisy
+- Legacy smoothLandmarks parameter removed in new API
+- Visible on official demo page
+
+**Smoothing Filters:**
+- Kalman filter: Predictive smoothing
+- Exponential Moving Average (EMA): Simple weighted average
+- One-Euro filter: Adaptive smoothing (best for real-time)
+
+**Configuration:**
+- minDetectionConfidence: 0.5 default
+- minTrackingConfidence: 0.5 default
+- 33 landmarks, 3D coordinates
+
+**Accuracy:**
+- Mean joint coordinate difference: ~0.097m
+- Average angle difference: ~10 degrees
+- Works on CPU (mobile + desktop)
+
+---
+
+### OpenCap Data Formats
+
+**Output Formats:**
+- .osim: OpenSim model files
+- .mot: Motion/kinematics data
+- .sto: Storage files (forces, activations)
+
+**Available Data:**
+- Raw: marker motion capture, GRF, EMG (10 muscles), video
+- Processed: scaled models, IK, ID, muscle simulations
+
+**Muscle Activation:**
+- Normalized by max value per participant
+- Vasti activation validation: AUC 0.83, accuracy 75%
+- Requires Static Optimization (external forces not measured)
+
+**Resources:**
+- API: https://opencap.ai
+- Core: github.com/stanfordnmbl/opencap-core
+- Data: SimTK repository
+
+---
+
 ## NEXT SESSION INSTRUCTIONS
 
 1. Read this file
@@ -1772,4 +1917,15 @@ window.parent.postMessage({event: 'timeUpdate', time: 5.2}, parentOrigin);
   - lz-string is the standard for URL state compression
   - MediaPipe has limitations (single person, lighting sensitive)
   - LTI 1.3 uses OAuth 2.0 + JWT (modern auth)
-- Next: Deep dive into customization and quality options per feature
+
+### Session 2 (2026-01-30 continued)
+- Deep research on interaction patterns, accessibility, performance
+- Added cross-cutting findings:
+  - Accessibility: Shadow DOM for screen readers, WCAG contrast
+  - Three.js: <100 draw calls target, instancing, .dispose() critical
+  - Timeline UX: Thumbnail storyboards, J/K/L keyboard standard
+  - URL state: history.push pattern, useUrlState hook
+  - MediaPipe: Kalman/EMA/One-Euro filters for jitter
+  - OpenCap: .osim/.mot/.sto formats, normalized activations
+- ~180 subphases covered
+- Next: Synthesize into feature requirements, then PRD

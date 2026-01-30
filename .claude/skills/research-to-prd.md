@@ -1,587 +1,30 @@
 # Skill: /research-to-prd
 
-## Master Orchestration Skill for Deep Research → PRD → Ralph-tui Implementation
+## Master Orchestration Skill
 
-This skill orchestrates the complete pipeline from an initial research prompt through deep investigation to a production-ready PRD and ralph-tui compatible implementation plan.
+**Deep Research → PRD → Ralph-tui Implementation**
 
----
-
-## CONVERSATION FLOW ANALYSIS
-
-### What We Did (Chronological)
-
-```
-USER PROMPT
-    ↓
-"Research Vittorio Caggiano and biomechanics visualization opportunities"
-    ↓
-PHASE 1: SUBJECT RESEARCH
-├── Background research (person, company, projects)
-├── Domain expertise identification
-├── Technology landscape mapping
-└── User feedback: "too superficial"
-    ↓
-PHASE 2: FEATURE IDEATION
-├── Brainstorm potential features
-├── Initial list of 12 features
-├── User feedback: "no MyoSuite references"
-└── Cleaned and revised feature list
-    ↓
-PHASE 3: DEEP RESEARCH STRUCTURE
-├── Created 7 subphase categories per feature
-├── 12 features × 25 subphases = 300+ items
-├── Categories: Existing Solutions, Customization, Quality,
-│   Markers, Interaction, Technical, Synthesis
-└── State file for resume capability
-    ↓
-PHASE 4: DEEP RESEARCH EXECUTION
-├── Pass 1: Web searches for each feature
-├── Competitor analysis (OpenSim, BioDigital, etc.)
-├── Technical feasibility research (Three.js, WebGL)
-├── Pass 2: Interaction patterns, accessibility, UX
-├── Cross-cutting findings (shared patterns)
-└── Key insight: NO web tool does dynamic muscle activation
-    ↓
-PHASE 5: SYNTHESIS
-├── Must-have / Nice-to-have / Future per feature
-├── Priority matrix (P0-P3 tiers)
-├── Dependency graph
-├── MVP definition
-└── Effort/Impact scoring
-    ↓
-PHASE 6: PRD CREATION
-├── Executive summary
-├── Problem statement
-├── Goals & success metrics
-├── Feature specifications + acceptance criteria
-├── UI specifications
-├── Technical architecture
-├── Implementation phases
-└── Risks & mitigations
-    ↓
-PHASE 7: RALPH-TUI CONVERSION
-├── Research ralph-tui prd.json format
-├── Convert PRD to userStories array
-├── Priority ordering
-└── Acceptance criteria per story
-    ↓
-OUTPUT: prd.json ready for `ralph-tui run`
-```
+This skill orchestrates the complete pipeline from an initial prompt through **500+ subphases of deep research** to a production-ready PRD and ralph-tui compatible implementation plan.
 
 ---
 
-## MASTER WORKFLOW DIAGRAM
+## TOTAL OUTPUT METRICS
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         /research-to-prd                                    │
-│                    Master Orchestrator Skill                                │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 1: INTAKE & SCOPING                                                  │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                     │
-│  │ Parse User  │───▶│  Clarify    │───▶│   Define    │                     │
-│  │   Prompt    │    │   Scope     │    │ Constraints │                     │
-│  └─────────────┘    └─────────────┘    └─────────────┘                     │
-│         │                  │                  │                             │
-│         └──────────────────┴──────────────────┘                             │
-│                            │                                                │
-│                            ▼                                                │
-│                   [research-brief.md]                                       │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 2: DOMAIN RESEARCH                          /deep-domain-research   │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                     │
-│  │  Subject    │───▶│  Industry   │───▶│ Technology  │                     │
-│  │  Research   │    │  Landscape  │    │   Mapping   │                     │
-│  └─────────────┘    └─────────────┘    └─────────────┘                     │
-│         │                  │                  │                             │
-│         ▼                  ▼                  ▼                             │
-│  [Person/Company]   [Competitors]      [Tech Stack]                        │
-│                            │                                                │
-│                            ▼                                                │
-│                   [domain-research.md]                                      │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 3: FEATURE IDEATION                          /feature-ideation      │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                     │
-│  │ Brainstorm  │───▶│   Filter    │───▶│  Validate   │                     │
-│  │  Features   │    │ Constraints │    │  with User  │                     │
-│  └─────────────┘    └─────────────┘    └─────────────┘                     │
-│         │                  │                  │                             │
-│         └──────────────────┴──────────────────┘                             │
-│                            │                                                │
-│                            ▼                                                │
-│                   [feature-list.md]                                         │
-│                   (N features identified)                                   │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 4: DEEP FEATURE RESEARCH                   /deep-feature-research   │
-│                                                                             │
-│  FOR EACH FEATURE (parallel where possible):                               │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐            │   │
-│  │  │ Existing │  │Customize │  │ Quality  │  │ Markers  │            │   │
-│  │  │Solutions │  │ Options  │  │Improvmts │  │ Annotate │            │   │
-│  │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘            │   │
-│  │       │             │             │             │                   │   │
-│  │  ┌────┴─────┐  ┌────┴─────┐  ┌────┴─────┐                          │   │
-│  │  │Interact  │  │Technical │  │Synthesis │                          │   │
-│  │  │Patterns  │  │Possible  │  │(Summary) │                          │   │
-│  │  └──────────┘  └──────────┘  └──────────┘                          │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                            │                                                │
-│                            ▼                                                │
-│             [loop-state-feature-research.md]                               │
-│             (300+ subphases with findings)                                 │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 5: CROSS-CUTTING RESEARCH                 /cross-cutting-research   │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                     │
-│  │Accessibility│───▶│ Performance │───▶│    UX       │                     │
-│  │  Patterns   │    │  Patterns   │    │  Patterns   │                     │
-│  └─────────────┘    └─────────────┘    └─────────────┘                     │
-│         │                  │                  │                             │
-│         └──────────────────┴──────────────────┘                             │
-│                            │                                                │
-│                            ▼                                                │
-│            [Cross-cutting findings added to state]                         │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 6: SYNTHESIS & PRIORITIZATION               /feature-synthesis      │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                     │
-│  │ Must-Have   │───▶│  Priority   │───▶│ Dependency  │                     │
-│  │Nice-to-Have │    │   Matrix    │    │   Graph     │                     │
-│  │   Future    │    │  (P0-P3)    │    │             │                     │
-│  └─────────────┘    └─────────────┘    └─────────────┘                     │
-│         │                  │                  │                             │
-│         └──────────────────┴──────────────────┘                             │
-│                            │                                                │
-│                            ▼                                                │
-│                   [MVP Definition]                                          │
-│                   [Effort/Impact Scores]                                    │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 7: PRD GENERATION                              /generate-prd        │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                     │
-│  │  Executive  │───▶│  Feature    │───▶│  Technical  │                     │
-│  │  Summary    │    │   Specs     │    │Architecture │                     │
-│  └─────────────┘    └─────────────┘    └─────────────┘                     │
-│         │                  │                  │                             │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                     │
-│  │     UI      │───▶│   Phases    │───▶│   Risks     │                     │
-│  │   Specs     │    │  (Sprints)  │    │Mitigations  │                     │
-│  └─────────────┘    └─────────────┘    └─────────────┘                     │
-│                            │                                                │
-│                            ▼                                                │
-│                   [Complete PRD Document]                                   │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  STAGE 8: RALPH-TUI CONVERSION                      /prd-to-ralph         │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                     │
-│  │  Extract    │───▶│  Generate   │───▶│  Validate   │                     │
-│  │   Tasks     │    │ userStories │    │   Format    │                     │
-│  └─────────────┘    └─────────────┘    └─────────────┘                     │
-│                            │                                                │
-│                            ▼                                                │
-│                      [prd.json]                                             │
-│                                                                             │
-│  Ready for: ralph-tui run --prd ./prd.json                                 │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+| Stage | Minimum Output |
+|-------|----------------|
+| Feature Research | **504 subphases** (12 features × 42 each) |
+| Web Searches | **216 searches** (3 per category × 6 categories × 12 features) |
+| Competitors Analyzed | **36** (3 per feature) |
+| Requirements | **156** (13 per feature: 5 must + 5 nice + 3 future) |
+| PRD Sections | **10 sections** with full content |
+| User Stories | **25-50** for ralph-tui |
 
 ---
 
-## DETAILED STAGE BREAKDOWN
-
-### STAGE 1: INTAKE & SCOPING
-
-**Purpose:** Understand user intent, clarify scope, identify constraints
-
-**Inputs:**
-- User's initial prompt
-- Project context (CLAUDE.md, existing code)
-
-**Process:**
-```
-1. Parse user prompt for:
-   - Subject matter (person, domain, technology)
-   - Goal type (research, feature, product)
-   - Implied constraints
-
-2. Ask clarifying questions:
-   - "What is the primary goal?"
-   - "Any topics/technologies to avoid?"
-   - "Target audience?"
-   - "Timeline/scope constraints?"
-
-3. Define research boundaries:
-   - In-scope topics
-   - Out-of-scope topics
-   - Hard constraints (e.g., "no MyoSuite")
-```
-
-**Outputs:**
-- `research-brief.md` with scope, constraints, goals
-
-**Gate:** User confirms scope before proceeding
-
----
-
-### STAGE 2: DOMAIN RESEARCH
-
-**Purpose:** Build foundational understanding of the domain
-
-**Inputs:**
-- research-brief.md
-- Subject/domain from user prompt
-
-**Subphases:**
-```
-2.1 Subject Research
-    - Background (person, company, history)
-    - Expertise areas
-    - Notable projects/publications
-    - Public presence (GitHub, papers, talks)
-
-2.2 Industry Landscape
-    - Major players
-    - Existing solutions
-    - Market gaps
-    - User pain points
-
-2.3 Technology Mapping
-    - Current tech stack (project)
-    - Relevant technologies
-    - Integration possibilities
-    - Technical constraints
-```
-
-**Tools Used:**
-- WebSearch for background research
-- WebFetch for detailed page analysis
-- Task(Explore) for codebase context
-
-**Outputs:**
-- `domain-research.md` with findings
-
----
-
-### STAGE 3: FEATURE IDEATION
-
-**Purpose:** Generate and filter potential features
-
-**Inputs:**
-- domain-research.md
-- research-brief.md (constraints)
-
-**Process:**
-```
-3.1 Brainstorm
-    - Generate 15-20 feature ideas
-    - No filtering at this stage
-    - Include wild ideas
-
-3.2 Filter
-    - Apply constraints (remove forbidden topics)
-    - Check technical feasibility
-    - Assess alignment with goals
-
-3.3 Validate
-    - Present feature list to user
-    - Get feedback on direction
-    - Refine based on input
-```
-
-**Outputs:**
-- `feature-list.md` with N approved features
-
-**Gate:** User approves feature list before deep research
-
----
-
-### STAGE 4: DEEP FEATURE RESEARCH
-
-**Purpose:** Exhaustively research each feature
-
-**Inputs:**
-- feature-list.md
-- N features to investigate
-
-**Structure (per feature):**
-```
-X.1 Existing Solutions Research
-    X.1.1 What tools currently do this?
-    X.1.2 What approaches do they use?
-    X.1.3 What are their limitations?
-    X.1.4 What do users complain about?
-    X.1.5 What's the state of the art?
-    X.1.6 CHECKPOINT: Landscape understood?
-
-X.2 Customization Options
-    X.2.1 What parameters can be customized?
-    X.2.2 What presets make sense?
-    X.2.3 What's the customization UI?
-    X.2.4 Accessibility considerations?
-    X.2.5 Default values?
-    X.2.6 CHECKPOINT: Customization spec complete?
-
-X.3 Quality Improvements
-    X.3.1 Visual quality options
-    X.3.2 Performance quality trade-offs
-    X.3.3 Fidelity levels
-    X.3.4 Enhancement effects
-    X.3.5 Publication-quality output
-    X.3.6 CHECKPOINT: Quality spec complete?
-
-X.4 Markers & Annotations
-    X.4.1 What can be labeled?
-    X.4.2 What can be annotated?
-    X.4.3 Measurement tools?
-    X.4.4 Data overlays?
-    X.4.5 Export options?
-    X.4.6 CHECKPOINT: Annotation spec complete?
-
-X.5 Interaction Patterns
-    X.5.1 Click interactions
-    X.5.2 Hover interactions
-    X.5.3 Keyboard navigation
-    X.5.4 Touch/mobile
-    X.5.5 Accessibility (screen readers)
-    X.5.6 CHECKPOINT: Interaction spec complete?
-
-X.6 Technical Possibilities
-    X.6.1 Implementation approaches
-    X.6.2 Performance considerations
-    X.6.3 Browser compatibility
-    X.6.4 Dependencies needed
-    X.6.5 Memory/CPU constraints
-    X.6.6 CHECKPOINT: Technical approach decided?
-
-X.7 Feature Synthesis
-    X.7.1 Must-have capabilities
-    X.7.2 Nice-to-have enhancements
-    X.7.3 Future possibilities
-    X.7.4 Dependencies on other features
-    X.7.5 Complexity estimate (1-5)
-    X.7.6 GATE: Ready for PRD?
-```
-
-**Total:** N features × 7 categories × ~6 items = ~42N subphases
-
-**State File Format:**
-```markdown
-# Deep Feature Research: [Project Name]
-
-## Session State
-Last Updated: [timestamp]
-Current Feature: [N]
-Current Subphase: [X.Y.Z]
-Status: IN_PROGRESS
-
-## Feature 1: [Name]
-### 1.1 Existing Solutions
-1.1.1 [x] Question → Finding
-1.1.2 [ ] Question
-...
-```
-
-**Outputs:**
-- `loop-state-feature-research.md` (resumable)
-- Findings database per feature
-
----
-
-### STAGE 5: CROSS-CUTTING RESEARCH
-
-**Purpose:** Identify patterns that apply across all features
-
-**Topics:**
-```
-5.1 Accessibility Patterns
-    - WCAG compliance
-    - Keyboard navigation
-    - Screen reader support
-    - Color contrast requirements
-
-5.2 Performance Patterns
-    - Target metrics (FPS, draw calls, memory)
-    - Optimization techniques
-    - Profiling tools
-
-5.3 UX Patterns
-    - Common UI patterns for domain
-    - Timeline/playback conventions
-    - Interaction standards (J/K/L, Space)
-
-5.4 Technical Patterns
-    - Shared libraries/utilities
-    - State management patterns
-    - Data flow patterns
-```
-
-**Outputs:**
-- Cross-cutting findings added to state file
-
----
-
-### STAGE 6: SYNTHESIS & PRIORITIZATION
-
-**Purpose:** Convert research into actionable requirements
-
-**Process:**
-```
-6.1 Per-Feature Requirements
-    - Extract must-have list
-    - Extract nice-to-have list
-    - Extract future possibilities
-
-6.2 Priority Matrix
-    ┌──────────┬────────────┬──────────────────────┐
-    │ Tier     │ Criteria   │ Features             │
-    ├──────────┼────────────┼──────────────────────┤
-    │ P0       │ Core value │ Differentiators      │
-    │ P1       │ Expected   │ Table stakes         │
-    │ P2       │ Growth     │ Expansion            │
-    │ P3       │ Platform   │ Ecosystem            │
-    └──────────┴────────────┴──────────────────────┘
-
-6.3 Dependency Graph
-    - Which features depend on others?
-    - What's the build order?
-    - What can be parallelized?
-
-6.4 MVP Definition
-    - Core features only
-    - Success metrics
-    - Out of scope
-```
-
-**Outputs:**
-- Priority matrix
-- Dependency graph
-- MVP definition
-
----
-
-### STAGE 7: PRD GENERATION
-
-**Purpose:** Create comprehensive PRD document
-
-**Template:**
-```markdown
-# Product Requirements Document
-
-## 1. Executive Summary
-- Product name
-- One-paragraph description
-- Key value proposition
-
-## 2. Problem Statement
-- Current pain points
-- Target users
-- Why now?
-
-## 3. Goals & Success Metrics
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| ...    | ...    | ...         |
-
-## 4. Feature Specifications
-### 4.1 [Feature Name]
-**User Story:** As a [user], I want [goal] so that [benefit]
-**Acceptance Criteria:**
-- [ ] Criterion 1
-- [ ] Criterion 2
-**Technical Notes:**
-- Implementation approach
-- Dependencies
-
-## 5. UI Specifications
-- Layout diagrams
-- Component hierarchy
-- Interaction patterns
-
-## 6. Technical Architecture
-- Data flow
-- State management
-- File structure
-
-## 7. Implementation Phases
-- Phase 1: [scope, duration]
-- Phase 2: [scope, duration]
-- ...
-
-## 8. Risks & Mitigations
-| Risk | Impact | Likelihood | Mitigation |
-|------|--------|------------|------------|
-
-## 9. Out of Scope
-- What's NOT included
-- Future considerations
-```
-
-**Outputs:**
-- Complete PRD document
-
----
-
-### STAGE 8: RALPH-TUI CONVERSION
-
-**Purpose:** Convert PRD to ralph-tui compatible format
-
-**prd.json Format:**
-```json
-{
-  "branchName": "feature-name",
-  "userStories": [
-    {
-      "id": "phase-task",
-      "title": "Task description",
-      "passes": false,
-      "priority": 1,
-      "acceptanceCriteria": "What validates completion"
-    }
-  ]
-}
-```
-
-**Conversion Rules:**
-```
-1. Each PRD acceptance criterion → one userStory
-2. Priority = execution order (1 = first)
-3. Group by phase for logical ordering
-4. Title = imperative action ("Create...", "Add...", "Implement...")
-5. acceptanceCriteria = testable condition
-```
-
-**Outputs:**
-- `prd.json` ready for ralph-tui
-
----
-
-## SKILL INVOCATION
-
-### Master Command
+## INVOCATION
 
 ```
-/research-to-prd [initial prompt]
+/research-to-prd "[Research topic/domain] for [product]. [Goals/context]."
 ```
 
 **Example:**
@@ -591,16 +34,446 @@ inspired by Vittorio Caggiano's work. Create features for MeshMotion
 that would appeal to researchers and educators."
 ```
 
-### Stage-Specific Commands
+---
+
+## STAGE OVERVIEW
 
 ```
-/deep-domain-research [subject]
-/feature-ideation [domain-research.md]
-/deep-feature-research [feature-list.md]
-/cross-cutting-research [state-file.md]
-/feature-synthesis [state-file.md]
-/generate-prd [synthesis-output]
-/prd-to-ralph [prd-document.md]
+┌─────────────────────────────────────────────────────────────────────┐
+│                        /research-to-prd                             │
+│                    8 STAGES • 500+ SUBPHASES                        │
+└─────────────────────────────────────────────────────────────────────┘
+                               │
+    ┌──────────────────────────┼──────────────────────────┐
+    ▼                          ▼                          ▼
+┌────────┐              ┌────────────┐              ┌────────────┐
+│STAGE 1 │              │  STAGE 2   │              │  STAGE 3   │
+│ INTAKE │─────────────▶│  DOMAIN    │─────────────▶│  FEATURE   │
+│& SCOPE │              │  RESEARCH  │              │  IDEATION  │
+│        │              │            │              │            │
+│ 5 min  │              │ 30-60 min  │              │ 15-30 min  │
+└────────┘              └────────────┘              └────────────┘
+    │                                                     │
+    │         ┌───────────────────────────────────────────┘
+    │         ▼
+    │  ┌─────────────────────────────────────────────────────────────┐
+    │  │                      STAGE 4                                │
+    │  │              /deep-feature-research                         │
+    │  │                                                             │
+    │  │  • 504 subphases (12 features × 7 categories × 6 items)    │
+    │  │  • 216 web searches minimum                                 │
+    │  │  • 5 research passes                                        │
+    │  │  • 2-4 hours                                                │
+    │  └─────────────────────────────────────────────────────────────┘
+    │         │
+    │         ▼
+    │  ┌─────────────────────────────────────────────────────────────┐
+    │  │  STAGE 5                    │  STAGE 6                      │
+    │  │  CROSS-CUTTING              │  /feature-synthesis           │
+    │  │                             │                               │
+    │  │  • Accessibility patterns   │  • 156 requirements extracted │
+    │  │  • Performance patterns     │  • Effort/impact scoring      │
+    │  │  • UX conventions          │  • Dependency graph           │
+    │  │                             │  • MVP definition             │
+    │  │  30-60 min                  │  30-60 min                    │
+    │  └─────────────────────────────┴───────────────────────────────┘
+    │         │
+    │         ▼
+    │  ┌─────────────────────────────────────────────────────────────┐
+    │  │                      STAGE 7                                │
+    │  │                   /generate-prd                             │
+    │  │                                                             │
+    │  │  • 10 sections                                              │
+    │  │  • 50+ acceptance criteria                                  │
+    │  │  • Full technical architecture                              │
+    │  │  • 7 generation passes                                      │
+    │  │  • 30-60 min                                                │
+    │  └─────────────────────────────────────────────────────────────┘
+    │         │
+    │         ▼
+    │  ┌─────────────────────────────────────────────────────────────┐
+    │  │                      STAGE 8                                │
+    │  │                   /prd-to-ralph                             │
+    │  │                                                             │
+    │  │  • 25-50 user stories                                       │
+    │  │  • 7 conversion passes                                      │
+    │  │  • JSON validation                                          │
+    │  │  • 15-30 min                                                │
+    │  │                                                             │
+    │  │  OUTPUT: prd.json → ralph-tui run --prd ./prd.json         │
+    │  └─────────────────────────────────────────────────────────────┘
+    │
+    └──────── TOTAL: 5-8 hours for complete pipeline
+```
+
+---
+
+## DETAILED STAGE SPECIFICATIONS
+
+### STAGE 1: INTAKE & SCOPING (5-10 min)
+
+**Purpose:** Parse user intent, clarify scope, define constraints
+
+**Process:**
+```
+1. PARSE USER PROMPT
+   - Extract subject matter (person, domain, technology)
+   - Identify goal type (research, feature, product)
+   - Note implied constraints
+
+2. ASK CLARIFYING QUESTIONS (use AskUserQuestion)
+   - "What is the primary goal?"
+   - "Any topics/technologies to AVOID?"
+   - "Target audience?"
+   - "Timeline/scope constraints?"
+
+3. DEFINE RESEARCH BOUNDARIES
+   - In-scope topics
+   - Out-of-scope topics
+   - Hard constraints (e.g., "no references to X")
+
+4. CREATE research-brief.md
+```
+
+**Output:** `research-brief.md`
+
+**Gate:** User confirms scope before proceeding
+
+---
+
+### STAGE 2: DOMAIN RESEARCH (30-60 min)
+
+**Purpose:** Build foundational understanding
+
+**Process:**
+```
+2.1 SUBJECT RESEARCH
+    - Background (person, company, history)
+    - Expertise areas
+    - Notable projects/publications
+    - Public presence (GitHub, papers, talks)
+
+    MINIMUM WEB SEARCHES: 3
+
+2.2 INDUSTRY LANDSCAPE
+    - Major players (5+)
+    - Existing solutions
+    - Market gaps
+    - User pain points
+
+    MINIMUM WEB SEARCHES: 3
+
+2.3 TECHNOLOGY MAPPING
+    - Current tech stack (project)
+    - Relevant technologies
+    - Integration possibilities
+    - Technical constraints
+
+    MINIMUM WEB SEARCHES: 2
+```
+
+**Output:** `domain-research.md`
+
+**Minimum:** 8 web searches, 5 competitors identified
+
+---
+
+### STAGE 3: FEATURE IDEATION (15-30 min)
+
+**Purpose:** Generate and filter potential features
+
+**Process:**
+```
+3.1 BRAINSTORM
+    - Generate 15-20 feature ideas
+    - No filtering at this stage
+    - Include ambitious ideas
+
+3.2 FILTER
+    - Apply constraints (remove forbidden topics)
+    - Check technical feasibility
+    - Assess alignment with goals
+
+3.3 VALIDATE WITH USER
+    - Present feature list
+    - Get feedback on direction
+    - Refine based on input
+```
+
+**Output:** `feature-list.md` with N approved features (typically 10-15)
+
+**Gate:** User approves feature list before deep research
+
+---
+
+### STAGE 4: DEEP FEATURE RESEARCH (2-4 hours)
+
+**Invokes:** `/deep-feature-research`
+
+**Per-Feature Structure (42 subphases each):**
+```
+X.1 EXISTING SOLUTIONS (6 subphases)
+    - What tools exist?
+    - What approaches?
+    - What limitations?
+    - User complaints?
+    - State of art?
+    - CHECKPOINT
+
+    REQUIRED: 3 web searches, 3 competitors
+
+X.2 CUSTOMIZATION OPTIONS (7 subphases)
+    - Parameters?
+    - Presets?
+    - UI patterns?
+    - Accessibility?
+    - Defaults?
+    - Persistence?
+    - CHECKPOINT
+
+X.3 QUALITY IMPROVEMENTS (7 subphases)
+    - Quality tiers?
+    - Trade-offs?
+    - Enhancement effects?
+    - Progressive enhancement?
+    - Publication quality?
+    - Mobile considerations?
+    - CHECKPOINT
+
+X.4 MARKERS & ANNOTATIONS (7 subphases)
+    - Labels?
+    - Annotations?
+    - Measurements?
+    - Overlays?
+    - Time-based?
+    - Export?
+    - CHECKPOINT
+
+X.5 INTERACTION PATTERNS (7 subphases)
+    - Click/tap?
+    - Hover/focus?
+    - Keyboard?
+    - Touch/mobile?
+    - Screen readers?
+    - Multi-select?
+    - CHECKPOINT
+
+    REQUIRED: 2 web searches (a11y, interactions)
+
+X.6 TECHNICAL POSSIBILITIES (7 subphases)
+    - Implementation approaches (2+)?
+    - Performance?
+    - Browser compatibility?
+    - Dependencies?
+    - Memory/CPU?
+    - Existing code?
+    - CHECKPOINT
+
+    REQUIRED: 2 web searches (implementation, libraries)
+
+X.7 FEATURE SYNTHESIS (6 subphases)
+    - Must-have (3+)
+    - Nice-to-have (3+)
+    - Future (2+)
+    - Dependencies
+    - Complexity (1-5)
+    - GATE
+```
+
+**5 Research Passes:**
+1. Pass 1: Existing Solutions (all features)
+2. Pass 2: Customization & Quality (all features)
+3. Pass 3: Interaction & Markers (all features)
+4. Pass 4: Technical Feasibility (all features)
+5. Pass 5: Synthesis & Cross-cutting
+
+**Output:** `loop-state-feature-research.md`
+
+**Totals for 12 features:**
+- 504 subphases
+- 216+ web searches
+- 36+ competitors
+- 12+ whitespace opportunities
+
+---
+
+### STAGE 5: CROSS-CUTTING RESEARCH (30-60 min)
+
+**Purpose:** Extract patterns across features
+
+**Process:**
+```
+AFTER all features researched:
+
+5.1 ACCESSIBILITY PATTERNS
+    - WCAG compliance requirements
+    - Keyboard navigation patterns
+    - Screen reader support
+    - Color contrast (4.5:1 AA, 7:1 AAA)
+
+5.2 PERFORMANCE PATTERNS
+    - Target metrics (FPS, draw calls, memory)
+    - Optimization techniques
+    - Profiling tools
+
+5.3 UX CONVENTIONS
+    - Domain-standard patterns
+    - Timeline/playback conventions (J/K/L)
+    - Interaction standards
+
+5.4 TECHNICAL PATTERNS
+    - Shared libraries/utilities
+    - State management patterns
+    - Data flow patterns
+```
+
+**Output:** Cross-cutting section added to state file
+
+---
+
+### STAGE 6: SYNTHESIS & PRIORITIZATION (30-60 min)
+
+**Invokes:** `/feature-synthesis`
+
+**4 Synthesis Passes:**
+```
+PASS 1: REQUIREMENTS EXTRACTION
+    Per feature:
+    - 5+ must-have items
+    - 5+ nice-to-have items
+    - 3+ future items
+    - 3+ technical notes
+
+PASS 2: EFFORT/IMPACT SCORING
+    Per feature:
+    - Effort score (1-5) with justification
+    - Impact score (1-5) with justification
+    - Priority calculation: Impact × (6 - Effort)
+    - Priority tier assignment (P0-P3)
+
+PASS 3: DEPENDENCY ANALYSIS
+    - Dependency matrix (all features)
+    - Dependency graph (ASCII)
+    - Critical path identification
+    - Parallel opportunities
+
+PASS 4: MVP DEFINITION
+    - Core features (P0 + critical P1)
+    - Success metrics with targets
+    - Technical constraints
+    - Out of scope items
+    - Build order (phases)
+```
+
+**Output:** Synthesis section in state file
+
+**Totals:**
+- 60+ must-have requirements
+- 60+ nice-to-have requirements
+- 36+ future items
+- 12 effort/impact assessments
+- Complete dependency graph
+- MVP definition
+
+---
+
+### STAGE 7: PRD GENERATION (30-60 min)
+
+**Invokes:** `/generate-prd`
+
+**7 Generation Passes:**
+```
+PASS 1: Executive & Problem (Sections 1-2)
+    - Product name & tagline
+    - Vision statement
+    - Key differentiator
+    - 3+ value propositions
+    - 5+ pain points
+    - 5+ user types
+
+PASS 2: Goals & Metrics (Section 3)
+    - 3-5 primary goals
+    - 6+ success metrics with targets
+    - Non-goals (explicit)
+
+PASS 3: Feature Specifications (Section 4)
+    Per MVP feature:
+    - User story
+    - 5+ acceptance criteria
+    - Technical specifications
+    - UI/UX requirements
+    - Edge cases
+    - Dependencies
+
+PASS 4: UI Specifications (Section 5)
+    - ASCII layout diagram
+    - Responsive behavior
+    - Component hierarchy
+    - Component specifications
+    - Interaction patterns
+    - Keyboard shortcuts
+
+PASS 5: Technical Architecture (Section 6)
+    - Tech stack table
+    - Data flow diagram
+    - State management structure
+    - File structure
+    - API/data contracts
+    - Performance architecture
+
+PASS 6: Implementation Phases (Section 7)
+    - 4+ phases
+    - Tasks per phase with acceptance
+    - Deliverables
+    - Exit criteria
+    - Duration estimates
+
+PASS 7: Risks & Appendices (Sections 8-10)
+    - 5+ risks with mitigations
+    - Out of scope list
+    - Data format specifications
+    - Technical reference
+    - Glossary
+```
+
+**Output:** Complete PRD document
+
+**Totals:**
+- 10 sections
+- 50+ acceptance criteria
+- Full technical architecture
+- Complete implementation roadmap
+
+---
+
+### STAGE 8: RALPH-TUI CONVERSION (15-30 min)
+
+**Invokes:** `/prd-to-ralph`
+
+**7 Conversion Passes:**
+```
+PASS 1: Extract from PRD phases
+PASS 2: Extract from feature specs
+PASS 3: Order by dependencies
+PASS 4: Assign priorities (1 to N, no gaps)
+PASS 5: Write testable acceptance criteria
+PASS 6: Generate JSON
+PASS 7: Validate output
+```
+
+**Output:** `prd.json`
+
+**Validation:**
+- Valid JSON
+- All required fields
+- Unique IDs
+- Sequential priorities
+- All passes: false
+- 25+ stories
+
+**Ready for:**
+```bash
+ralph-tui run --prd ./prd.json
 ```
 
 ---
@@ -611,82 +484,100 @@ All stages write to state files for resume capability:
 
 ```
 .claude/
-├── research-brief.md           # Stage 1 output
-├── domain-research.md          # Stage 2 output
-├── feature-list.md             # Stage 3 output
-├── loop-state-feature-research.md  # Stage 4-5 output (resumable)
-└── prd-complete.md             # Stage 6-7 output
+├── research-brief.md                 # Stage 1
+├── domain-research.md                # Stage 2
+├── feature-list.md                   # Stage 3
+├── loop-state-feature-research.md    # Stages 4-6 (resumable)
+└── prd-complete.md                   # Stage 7
 
-prd.json                        # Stage 8 output (ralph-tui ready)
+prd.json                              # Stage 8 (ralph-tui ready)
 ```
 
 ---
 
-## ERROR HANDLING
+## RESUME PROTOCOL
 
-### User Feedback Integration
+On `continue` command:
 
-At any stage, user can redirect:
-- "This is too superficial" → Increase depth, add subphases
-- "Remove X references" → Apply constraint, clean history
-- "Focus on Y instead" → Adjust scope, re-prioritize
-
-### Resume Protocol
-
-If context runs out:
-1. Save current state to file
-2. Mark progress (checkboxes, timestamps)
-3. On resume, read state file
-4. Continue from last checkpoint
+1. Read all state files
+2. Find last completed stage/pass
+3. Continue from next incomplete item
+4. Update state file after each checkpoint
+5. Commit state file after each stage
 
 ---
 
 ## QUALITY GATES
 
-Each stage has a gate before proceeding:
-
 | Stage | Gate Condition |
 |-------|----------------|
 | 1 | User confirms scope |
-| 2 | Domain understanding validated |
+| 2 | 8+ web searches, 5+ competitors |
 | 3 | User approves feature list |
-| 4 | All feature subphases complete |
-| 5 | Cross-cutting patterns identified |
-| 6 | MVP defined, priorities set |
-| 7 | PRD reviewed (optional) |
-| 8 | prd.json validates |
+| 4 | 504 subphases, 216 searches, all checkpoints |
+| 5 | Cross-cutting patterns extracted |
+| 6 | 156 requirements, dependency graph, MVP |
+| 7 | 10 sections, 50+ criteria |
+| 8 | Valid JSON, 25+ stories |
 
 ---
 
-## ESTIMATED DURATION
+## EXECUTION CHECKLIST
 
-| Stage | Typical Duration | Parallelizable |
-|-------|------------------|----------------|
-| 1. Intake | 5-10 min | No |
-| 2. Domain Research | 30-60 min | Partially |
-| 3. Feature Ideation | 15-30 min | No |
-| 4. Deep Research | 2-4 hours | Yes (features) |
-| 5. Cross-Cutting | 30-60 min | Yes (topics) |
-| 6. Synthesis | 30-60 min | No |
-| 7. PRD Generation | 30-60 min | No |
-| 8. Ralph Conversion | 15-30 min | No |
+Before marking complete:
 
-**Total:** 5-8 hours for comprehensive research-to-implementation
+**Stage 4:**
+- [ ] 504+ subphases documented
+- [ ] 216+ web searches logged
+- [ ] 36+ competitors analyzed
+- [ ] 12+ whitespace opportunities
+- [ ] All 5 passes complete
+- [ ] All checkpoints passed
+
+**Stage 6:**
+- [ ] 60+ must-have requirements
+- [ ] 60+ nice-to-have requirements
+- [ ] 12 effort/impact scores
+- [ ] Dependency matrix complete
+- [ ] MVP defined
+
+**Stage 7:**
+- [ ] 10 PRD sections
+- [ ] 50+ acceptance criteria
+- [ ] UI specifications
+- [ ] Technical architecture
+- [ ] Implementation phases
+
+**Stage 8:**
+- [ ] 25+ user stories
+- [ ] Valid JSON
+- [ ] Sequential priorities
+- [ ] Ready for ralph-tui
 
 ---
 
-## IMPLEMENTATION NOTES
+## TOTAL DURATION
 
-### This Skill Should:
-1. Use TodoWrite extensively for progress tracking
-2. Commit state files regularly
-3. Ask clarifying questions early (Stage 1)
-4. Not ask questions after Stage 3 (use state file)
-5. Support `continue` command at any point
-6. Produce ralph-tui compatible output
+| Stage | Duration |
+|-------|----------|
+| 1. Intake | 5-10 min |
+| 2. Domain | 30-60 min |
+| 3. Ideation | 15-30 min |
+| 4. Deep Research | 2-4 hours |
+| 5. Cross-cutting | 30-60 min |
+| 6. Synthesis | 30-60 min |
+| 7. PRD | 30-60 min |
+| 8. Ralph | 15-30 min |
+| **TOTAL** | **5-8 hours** |
 
-### This Skill Should NOT:
-1. Skip the deep research phases
-2. Make assumptions without validation
-3. Proceed without user confirmation at gates
-4. Lose progress on context overflow
+---
+
+## SKILL DEPENDENCIES
+
+```
+/research-to-prd (orchestrator)
+    ├── /deep-feature-research (stage 4)
+    ├── /feature-synthesis (stage 6)
+    ├── /generate-prd (stage 7)
+    └── /prd-to-ralph (stage 8)
+```

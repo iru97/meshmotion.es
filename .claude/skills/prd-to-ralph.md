@@ -1,244 +1,463 @@
 # Skill: /prd-to-ralph
 
 ## Purpose
-Convert a PRD document into ralph-tui compatible prd.json format for autonomous implementation.
+Convert a comprehensive PRD into **ralph-tui compatible prd.json** with 25-50+ user stories, proper prioritization, and testable acceptance criteria.
 
 ## Invocation
 ```
 /prd-to-ralph [prd-document.md]
 ```
 
-## Inputs
-- Complete PRD document
-- Implementation phases with tasks
-- Acceptance criteria per feature
+---
 
-## prd.json Format
+## MANDATORY REQUIREMENTS
 
-```json
+### Minimum Conversion Depth
+| Requirement | Minimum |
+|-------------|---------|
+| User stories | **25** |
+| Acceptance criteria per story | **1 testable sentence** |
+| Priority coverage | **All priorities 1-N sequential** |
+| Task granularity | **Completable in 1 Claude iteration** |
+
+### Output Validation
+- Valid JSON (parseable by `jq`)
+- All required fields present
+- No duplicate IDs
+- Sequential priorities (no gaps)
+- All `passes: false` initially
+
+---
+
+## CONVERSION PASS STRUCTURE
+
+### PASS 1: EXTRACT TASKS FROM PRD
+```
+SOURCE: Section 7 (Implementation Phases)
+
+FOR EACH PHASE:
+  FOR EACH TASK:
+    Extract:
+    - Task description → title
+    - Acceptance criteria → acceptanceCriteria
+    - Phase number → id prefix
+
+  EXAMPLE EXTRACTION:
+
+  PRD Section 7:
+  ```
+  ### Phase 1: Foundation
+  | # | Task | Description | Acceptance |
+  | 1.1 | Create route | Create /app/biomechanics/page.tsx | Route renders without errors |
+  ```
+
+  Becomes:
+  ```json
+  {
+    "id": "foundation-1",
+    "title": "Create /app/biomechanics/page.tsx route",
+    "acceptanceCriteria": "Route exists and renders without errors. Uses 'use client' directive."
+  }
+  ```
+
+CHECKPOINT: All phase tasks extracted
+```
+
+### PASS 2: EXTRACT FROM FEATURE SPECS
+```
+SOURCE: Section 4 (Feature Specifications)
+
+FOR EACH FEATURE:
+  FOR EACH ACCEPTANCE CRITERION:
+    Determine if it needs its own task or groups with others
+
+  GROUPING RULES:
+  - Same component → combine
+  - Different files → separate
+  - < 30 min work → can combine
+  - > 2 hours work → must split
+
+  EXAMPLE:
+
+  PRD Feature Spec:
+  ```
+  ### 4.1 Muscle Heatmap
+  Acceptance Criteria:
+  - [ ] Muscle regions colored by activation level
+  - [ ] Colors update with animation playback
+  - [ ] Default colormap is viridis
+  - [ ] Legend shows scale
+  - [ ] Toggle on/off
+  ```
+
+  Becomes multiple tasks:
+  ```json
+  [
+    {
+      "id": "viz-1",
+      "title": "Create lib/colormaps/index.ts with viridis colormap",
+      "acceptanceCriteria": "Exports viridis function taking 0-1 value, returns THREE.Color."
+    },
+    {
+      "id": "viz-2",
+      "title": "Create MuscleHeatmap.tsx with vertex color rendering",
+      "acceptanceCriteria": "Component applies activation values as vertex colors. Uses viridis colormap."
+    },
+    {
+      "id": "viz-3",
+      "title": "Add activation legend component",
+      "acceptanceCriteria": "Shows gradient bar with 0-1 scale. Matches current colormap."
+    },
+    {
+      "id": "viz-4",
+      "title": "Sync heatmap updates with playback",
+      "acceptanceCriteria": "Colors update each frame during playback. Performance <1ms per update."
+    }
+  ]
+  ```
+
+CHECKPOINT: All feature criteria converted to tasks
+```
+
+### PASS 3: ORDER BY DEPENDENCIES
+```
+SOURCE: Dependency graph from synthesis + PRD Section 7
+
+ORDERING RULES:
+1. Foundation tasks ALWAYS first (priority 1-N)
+2. Core infrastructure before features
+3. Data loading before visualization
+4. Basic features before advanced
+5. Polish/integration tasks LAST
+
+DEPENDENCY RESOLUTION:
+```
+IF Task B depends on Task A:
+  priority(B) > priority(A)
+
+IF Tasks A and B are independent:
+  Order by: complexity (simpler first), then alphabetically
+```
+
+EXAMPLE ORDERING:
+
+Before ordering (extracted):
+- Create heatmap component
+- Create colormap utility
+- Create store
+- Create route
+- Create types
+
+After ordering:
+1. Create route (foundation)
+2. Create types (foundation)
+3. Create store (foundation)
+4. Create colormap utility (enables heatmap)
+5. Create heatmap component (depends on 3, 4)
+
+CHECKPOINT: All tasks ordered by dependency
+```
+
+### PASS 4: ASSIGN PRIORITIES
+```
+PRIORITY ASSIGNMENT:
+- Start at 1
+- Increment by 1 for each task
+- No gaps
+- No duplicates
+
+VERIFICATION:
+```bash
+# Check for gaps
+cat prd.json | jq '[.userStories[].priority] | sort | . as $arr |
+  [range(1; ($arr | max) + 1)] | . - $arr'
+# Should output: []
+
+# Check for duplicates
+cat prd.json | jq '[.userStories[].priority] | group_by(.) |
+  map(select(length > 1))'
+# Should output: []
+```
+
+CHECKPOINT: Priorities are 1 to N with no gaps
+```
+
+### PASS 5: WRITE ACCEPTANCE CRITERIA
+```
+CRITERIA RULES:
+
+1. SINGLE TESTABLE SENTENCE when possible
+   Good: "Route exists at /biomechanics and renders without errors."
+   Bad: "The route should work."
+
+2. MULTIPLE CONDITIONS separated by periods
+   Good: "Parser loads BVH files. Returns skeleton and animation. Handles errors gracefully."
+   Bad: "Parser works correctly for all file types"
+
+3. SPECIFIC OVER VAGUE
+   Good: "Slider value syncs with currentTime in store. Updates within 16ms."
+   Bad: "Slider works smoothly"
+
+4. VERIFIABLE BY CLAUDE
+   Good: "TypeScript compiles without errors. ESLint passes."
+   Bad: "Code quality is good"
+
+5. INCLUDE EDGE CASES
+   Good: "Handles empty files gracefully. Shows error toast for invalid format."
+   Bad: "Error handling works"
+
+TEMPLATE:
+"[Primary action/state]. [Secondary requirement]. [Edge case handling]."
+
+EXAMPLES:
+- "Store created with state properties and actions. Uses Zustand selector pattern. Exports typed hooks."
+- "BVH files load successfully. Skeleton renders in scene. Invalid files show error message."
+- "Timeline slider scrubs animation. Updates are smooth without jitter. Works with keyboard arrows."
+
+CHECKPOINT: All acceptance criteria are testable
+```
+
+### PASS 6: GENERATE JSON
+```
+FINAL STRUCTURE:
+
 {
-  "branchName": "feature-branch-name",
+  "branchName": "[feature-name-kebab-case]",
   "userStories": [
     {
-      "id": "unique-id",
-      "title": "Imperative task description",
+      "id": "[phase]-[number]",
+      "title": "[Imperative verb] [specific object]",
       "passes": false,
-      "priority": 1,
-      "acceptanceCriteria": "Testable completion condition"
+      "priority": [1-N],
+      "acceptanceCriteria": "[Testable condition(s)]"
     }
   ]
 }
+
+FIELD REQUIREMENTS:
+
+branchName:
+- kebab-case
+- descriptive of feature
+- valid git branch name
+- Example: "biomechanics-mvp", "muscle-heatmap-v2"
+
+id:
+- Format: [phase]-[number]
+- Unique across all stories
+- Examples: "foundation-1", "timeline-3", "viz-2"
+
+title:
+- Starts with imperative verb (Create, Add, Implement, Update)
+- Specific about what is created/modified
+- Under 80 characters
+- Examples:
+  - "Create /app/biomechanics/page.tsx route"
+  - "Implement play/pause with Space keyboard shortcut"
+  - "Add drag-and-drop file upload UI"
+
+passes:
+- ALWAYS false initially
+- ralph-tui sets to true when complete
+
+priority:
+- Integer starting at 1
+- Sequential with no gaps
+- Lower = executed first
+
+acceptanceCriteria:
+- 1-3 sentences
+- Testable by Claude
+- Specific conditions
 ```
 
-## Conversion Rules
-
-### 1. Branch Name
-- Derive from product/feature name
-- Use kebab-case
-- Example: `biomechanics-mvp`, `muscle-heatmap-feature`
-
-### 2. User Story ID Format
+### PASS 7: VALIDATE OUTPUT
 ```
-[phase]-[number]
+VALIDATION CHECKLIST:
 
-Examples:
-- foundation-1
-- timeline-2
-- import-3
-- viz-4
-- polish-5
-```
+1. JSON SYNTAX
+   ```bash
+   cat prd.json | jq . > /dev/null && echo "Valid JSON"
+   ```
 
-### 3. Title Format
-- **Imperative verb** + object
-- Keep under 60 characters
-- Be specific about what is created/modified
+2. REQUIRED FIELDS
+   ```bash
+   cat prd.json | jq '.userStories[] |
+     select(.id == null or .title == null or
+            .passes == null or .priority == null or
+            .acceptanceCriteria == null)'
+   # Should output nothing
+   ```
 
-```
-Good:
-- "Create /app/biomechanics/page.tsx route"
-- "Implement play/pause button with Space shortcut"
-- "Add drag-and-drop file upload UI"
+3. UNIQUE IDS
+   ```bash
+   cat prd.json | jq '[.userStories[].id] |
+     group_by(.) | map(select(length > 1)) | length'
+   # Should output: 0
+   ```
 
-Bad:
-- "The route should be created" (passive)
-- "Route" (too vague)
-- "Create the thing that handles the files" (unclear)
-```
+4. SEQUENTIAL PRIORITIES
+   ```bash
+   cat prd.json | jq '[.userStories[].priority] | sort |
+     . as $a | [range(1; length+1)] | . == $a'
+   # Should output: true
+   ```
 
-### 4. Priority
-- Sequential execution order (1, 2, 3...)
-- Respects dependency graph
-- Foundation tasks first
-- Polish tasks last
+5. ALL PASSES FALSE
+   ```bash
+   cat prd.json | jq '[.userStories[].passes] | all(. == false)'
+   # Should output: true
+   ```
 
-### 5. Acceptance Criteria
-- Single sentence when possible
-- Multiple conditions separated by periods
-- Must be verifiable by Claude
+6. MINIMUM STORIES
+   ```bash
+   cat prd.json | jq '.userStories | length >= 25'
+   # Should output: true
+   ```
 
-```
-Good:
-- "Route exists at /biomechanics, renders without errors, uses 'use client' directive."
-- "Slider value syncs with currentTime in store. Animation mixer responds to time changes."
-
-Bad:
-- "It works" (not verifiable)
-- "Good performance" (not measurable)
+CHECKPOINT: All validations pass
 ```
 
-## Conversion Process
+---
 
-### Step 1: Extract Tasks from PRD
+## TASK GRANULARITY GUIDE
 
-From each PRD section:
-
-**From Feature Specifications:**
+### Too Large (Must Split)
 ```
-Acceptance Criteria:
-- [ ] BVH files load with skeleton visualization
-- [ ] CSV motion data maps to model joints
-```
+❌ "Implement the entire data import system"
+❌ "Create all visualization components"
+❌ "Build the complete timeline"
 
-Becomes:
-```json
-{
-  "id": "import-1",
-  "title": "Create lib/parsers/bvh-parser.ts using THREE.BVHLoader",
-  "acceptanceCriteria": "Parser loads BVH files. Returns skeleton and animation clip. Handles errors gracefully."
-}
+Split into:
+✓ "Create BVH parser"
+✓ "Create CSV parser"
+✓ "Create file upload UI"
+✓ "Create import hook"
 ```
 
-**From Implementation Phases:**
+### Too Small (Combine)
 ```
-Phase 1: Foundation
-- [ ] Create /biomechanics route
-- [ ] Set up BiomechanicsScene component
-```
+❌ "Add import statement"
+❌ "Create empty file"
+❌ "Add single prop"
 
-Becomes:
-```json
-{
-  "id": "foundation-1",
-  "title": "Create /app/biomechanics/page.tsx route",
-  "acceptanceCriteria": "Route exists, renders without errors, basic layout present."
-}
+Combine into:
+✓ "Create Component.tsx with props interface and basic render"
 ```
 
-### Step 2: Order by Dependencies
-
-1. Types/interfaces first
-2. Store/state second
-3. Base components third
-4. Feature implementations fourth
-5. Integration/polish last
-
-### Step 3: Assign Priorities
-
+### Just Right
 ```
-priority: 1  → First task executed
-priority: 2  → Second task
-...
-priority: N  → Last task
+✓ "Create lib/parsers/bvh-parser.ts using THREE.BVHLoader"
+✓ "Implement play/pause button with Space keyboard shortcut"
+✓ "Add timeline slider with frame scrubbing"
+✓ "Create URL state encoding with lz-string compression"
 ```
 
-### Step 4: Validate JSON
+**Rule of Thumb:** Each task = 15-60 minutes of Claude work = 1 iteration
 
-```bash
-# Check valid JSON
-cat prd.json | jq .
+---
 
-# Check required fields
-cat prd.json | jq '.userStories[] | select(.id == null or .title == null or .passes == null or .priority == null or .acceptanceCriteria == null)'
-```
+## STATE FILE FORMAT
 
-## Example Conversion
-
-**PRD Input:**
 ```markdown
-### 4.1 Biomechanics Data Import (P0)
+# PRD to Ralph Conversion: [Project Name]
 
-**Acceptance Criteria:**
-- [ ] BVH files load with skeleton visualization
-- [ ] CSV motion data maps to model joints
-- [ ] Drag-and-drop file upload works
+## Session State
+**Last Updated**: [timestamp]
+**Current Pass**: [1-7]
+**Status**: IN_PROGRESS | COMPLETE
+
+## Progress
+| Pass | Description | Status |
+|------|-------------|--------|
+| 1 | Extract from phases | [✓/In Progress] |
+| 2 | Extract from features | [✓/In Progress] |
+| 3 | Order by dependencies | [✓/In Progress] |
+| 4 | Assign priorities | [✓/In Progress] |
+| 5 | Write criteria | [✓/In Progress] |
+| 6 | Generate JSON | [✓/In Progress] |
+| 7 | Validate | [✓/In Progress] |
+
+## Extraction Log
+| Source | Tasks Extracted |
+|--------|-----------------|
+| Phase 1: Foundation | [N] |
+| Phase 2: Core | [N] |
+| Phase 3: UX | [N] |
+| Phase 4: Polish | [N] |
+| Feature 1 | [N] |
+| Feature 2 | [N] |
+| ... | ... |
+| **Total** | **[N]** |
+
+## Validation Results
+- [ ] Valid JSON
+- [ ] All required fields
+- [ ] Unique IDs
+- [ ] Sequential priorities
+- [ ] All passes false
+- [ ] 25+ stories
+
+## Final Output
+File: prd.json
+Stories: [N]
+Ready for: ralph-tui run --prd ./prd.json
 ```
 
-**prd.json Output:**
+---
+
+## EXAMPLE COMPLETE OUTPUT
+
 ```json
 {
   "branchName": "biomechanics-mvp",
   "userStories": [
     {
-      "id": "import-1",
-      "title": "Create lib/parsers/bvh-parser.ts using THREE.BVHLoader",
+      "id": "foundation-1",
+      "title": "Create /app/biomechanics/page.tsx route",
       "passes": false,
-      "priority": 11,
-      "acceptanceCriteria": "Parser loads BVH files using three/examples/jsm/loaders/BVHLoader. Returns skeleton and animation clip. Handles parse errors with Result pattern."
+      "priority": 1,
+      "acceptanceCriteria": "Route exists at /biomechanics. Renders without errors. Uses 'use client' directive. Basic layout with placeholder content."
     },
     {
-      "id": "import-2",
-      "title": "Create lib/parsers/csv-parser.ts for motion data",
+      "id": "foundation-2",
+      "title": "Create types/biomechanics.ts with TypeScript interfaces",
       "passes": false,
-      "priority": 12,
-      "acceptanceCriteria": "Parses CSV with columns: time, joint, x, y, z. Converts to MotionData interface. Validates required columns."
+      "priority": 2,
+      "acceptanceCriteria": "Interfaces defined: MotionData, ActivationData, ForceData, BiomechanicsState. All types exported. No TypeScript errors."
     },
     {
-      "id": "import-5",
-      "title": "Add drag-and-drop file upload UI",
+      "id": "foundation-3",
+      "title": "Create lib/store/biomechanics-store.ts Zustand store",
       "passes": false,
-      "priority": 15,
-      "acceptanceCriteria": "Drop zone accepts BVH, CSV, JSON files. Visual feedback on drag. Error toast for unsupported formats."
+      "priority": 3,
+      "acceptanceCriteria": "Store has state and actions. Uses selector pattern. Exports typed hooks."
+    },
+    ...
+    {
+      "id": "polish-1",
+      "title": "Final integration test and accessibility check",
+      "passes": false,
+      "priority": 25,
+      "acceptanceCriteria": "All features work together. TypeScript compiles. ESLint passes. 60fps maintained. Keyboard navigation works."
     }
   ]
 }
 ```
 
-## Task Granularity Guidelines
+---
 
-### Too Large (Split It)
-```
-"Implement the entire data import system"
-```
+## EXECUTION CHECKLIST
 
-### Too Small (Combine It)
-```
-"Add import statement for React"
-```
+Before marking conversion complete:
 
-### Just Right
-```
-"Create lib/parsers/bvh-parser.ts using THREE.BVHLoader"
-```
-
-**Rule of Thumb:** Each task should be completable in one Claude iteration (~5-15 minutes of work).
-
-## Outputs
-
-1. **prd.json** - ralph-tui compatible file
-2. **Validation report** - any issues found
-
-## Usage After Conversion
-
-```bash
-# Install ralph-tui
-bun install -g ralph-tui
-
-# Run implementation
-ralph-tui run --prd ./prd.json
-
-# Resume if interrupted
-ralph-tui resume
-```
-
-## Quality Checklist
-
-- [ ] branchName is valid git branch name
-- [ ] All userStories have required fields
-- [ ] IDs are unique
-- [ ] Priorities are sequential (no gaps)
-- [ ] All passes: false initially
-- [ ] Titles are imperative and specific
-- [ ] Acceptance criteria are testable
-- [ ] Task order respects dependencies
-- [ ] JSON is valid (parseable)
+- [ ] **All PRD phases** converted to tasks
+- [ ] **All feature criteria** converted to tasks
+- [ ] **25+ user stories** total
+- [ ] **Dependencies respected** in ordering
+- [ ] **Priorities sequential** 1 to N
+- [ ] **All IDs unique**
+- [ ] **All criteria testable**
+- [ ] **JSON validates**
+- [ ] **prd.json committed**
+- [ ] **Ready for ralph-tui run**

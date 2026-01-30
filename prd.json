@@ -1,0 +1,180 @@
+{
+  "branchName": "biomechanics-mvp",
+  "userStories": [
+    {
+      "id": "foundation-1",
+      "title": "Create /app/biomechanics/page.tsx route",
+      "passes": false,
+      "priority": 1,
+      "acceptanceCriteria": "Route exists at /biomechanics, renders without errors, uses 'use client' directive, basic layout with placeholder content"
+    },
+    {
+      "id": "foundation-2",
+      "title": "Create types/biomechanics.ts with TypeScript interfaces",
+      "passes": false,
+      "priority": 2,
+      "acceptanceCriteria": "Interfaces defined: MotionData, ActivationData, ForceData, BiomechanicsState. All types exported. No TypeScript errors."
+    },
+    {
+      "id": "foundation-3",
+      "title": "Create lib/store/biomechanics-store.ts Zustand store",
+      "passes": false,
+      "priority": 3,
+      "acceptanceCriteria": "Store created with state: motionData, activationData, forceData, showHeatmap, showForces, playback state. Actions for loading data and toggling visualization. Uses selector pattern like viewer-store.ts."
+    },
+    {
+      "id": "foundation-4",
+      "title": "Create components/biomechanics/BiomechanicsScene.tsx",
+      "passes": false,
+      "priority": 4,
+      "acceptanceCriteria": "Component renders R3F Canvas with OrbitControls and Environment. Connects to biomechanics-store. Follows existing Scene.tsx patterns."
+    },
+    {
+      "id": "foundation-5",
+      "title": "Add basic layout with Canvas and placeholder panels",
+      "passes": false,
+      "priority": 5,
+      "acceptanceCriteria": "Page has layout: top toolbar placeholder, main 3D viewport, bottom timeline placeholder, side settings placeholder. Responsive design with Tailwind."
+    },
+    {
+      "id": "timeline-1",
+      "title": "Create components/biomechanics/TimelineControls.tsx",
+      "passes": false,
+      "priority": 6,
+      "acceptanceCriteria": "Component renders timeline bar with play button, slider, time display, speed selector. Uses shadcn/ui Slider and Button components."
+    },
+    {
+      "id": "timeline-2",
+      "title": "Implement play/pause button with Space keyboard shortcut",
+      "passes": false,
+      "priority": 7,
+      "acceptanceCriteria": "Play/pause toggles isPlaying in store. Space bar toggles playback. Button shows correct icon (Play/Pause). Accessible with aria-label."
+    },
+    {
+      "id": "timeline-3",
+      "title": "Implement timeline slider with frame scrubbing",
+      "passes": false,
+      "priority": 8,
+      "acceptanceCriteria": "Slider value syncs with currentTime in store. Dragging updates time. Animation mixer responds to time changes. Smooth scrubbing without jitter."
+    },
+    {
+      "id": "timeline-4",
+      "title": "Implement speed selector (0.25x-2x)",
+      "passes": false,
+      "priority": 9,
+      "acceptanceCriteria": "Dropdown with speed options: 0.25x, 0.5x, 1x, 1.5x, 2x. Selection updates playbackSpeed in store. Animation respects speed setting."
+    },
+    {
+      "id": "timeline-5",
+      "title": "Add time display in MM:SS.ms format",
+      "passes": false,
+      "priority": 10,
+      "acceptanceCriteria": "Shows current time and total duration. Format: 01:23.45 / 02:00.00. Updates in real-time during playback. Monospace font for stability."
+    },
+    {
+      "id": "import-1",
+      "title": "Create lib/parsers/bvh-parser.ts using THREE.BVHLoader",
+      "passes": false,
+      "priority": 11,
+      "acceptanceCriteria": "Parser loads BVH files using three/examples/jsm/loaders/BVHLoader. Returns skeleton and animation clip. Handles parse errors gracefully with Result pattern."
+    },
+    {
+      "id": "import-2",
+      "title": "Create lib/parsers/csv-parser.ts for motion data",
+      "passes": false,
+      "priority": 12,
+      "acceptanceCriteria": "Parses CSV with columns: time, joint, x, y, z, rx, ry, rz. Converts to MotionData interface. Validates required columns. Error messages for malformed data."
+    },
+    {
+      "id": "import-3",
+      "title": "Create lib/parsers/activation-parser.ts for muscle data",
+      "passes": false,
+      "priority": 13,
+      "acceptanceCriteria": "Parses JSON activation data with version, muscles array, framerate, frames. Validates schema. Normalizes activation values to 0-1 range."
+    },
+    {
+      "id": "import-4",
+      "title": "Create hooks/use-biomechanics-loader.ts hook",
+      "passes": false,
+      "priority": 14,
+      "acceptanceCriteria": "Hook handles file input, detects format (BVH/CSV/JSON), calls appropriate parser, updates store. Returns isLoading, error states. Follows use-gltf-loader.ts pattern."
+    },
+    {
+      "id": "import-5",
+      "title": "Add drag-and-drop file upload UI",
+      "passes": false,
+      "priority": 15,
+      "acceptanceCriteria": "Drop zone accepts BVH, CSV, JSON files. Visual feedback on drag over. Shows file name after load. Error toast for unsupported formats. Click to browse option."
+    },
+    {
+      "id": "viz-1",
+      "title": "Create lib/colormaps/index.ts with viridis, cividis, etc.",
+      "passes": false,
+      "priority": 16,
+      "acceptanceCriteria": "Exports colormap functions: viridis, cividis, inferno, plasma. Each takes 0-1 value, returns THREE.Color. Perceptually uniform interpolation."
+    },
+    {
+      "id": "viz-2",
+      "title": "Create components/biomechanics/MuscleHeatmap.tsx with vertex colors",
+      "passes": false,
+      "priority": 17,
+      "acceptanceCriteria": "Component applies activation values as vertex colors to mesh. Uses selected colormap from store. Updates colors each frame during playback. Performance: <1ms per frame."
+    },
+    {
+      "id": "viz-3",
+      "title": "Create components/biomechanics/ActivationLegend.tsx",
+      "passes": false,
+      "priority": 18,
+      "acceptanceCriteria": "Shows gradient bar with 0-1 scale labels. Matches current colormap. Positioned in corner of viewport. Toggle visibility from settings. Accessible color contrast."
+    },
+    {
+      "id": "viz-4",
+      "title": "Create components/biomechanics/ForceVectors.tsx with ArrowHelper",
+      "passes": false,
+      "priority": 19,
+      "acceptanceCriteria": "Renders force vectors as arrows using THREE.ArrowHelper. Length scales with magnitude. Direction matches force data. Configurable scale factor. Toggle visibility."
+    },
+    {
+      "id": "viz-5",
+      "title": "Sync visualization updates with timeline playback",
+      "passes": false,
+      "priority": 20,
+      "acceptanceCriteria": "Heatmap and force vectors update in useFrame. Interpolate between keyframes if needed. Smooth transitions. No visual glitches during scrubbing."
+    },
+    {
+      "id": "url-1",
+      "title": "Create hooks/use-url-state.ts with lz-string compression",
+      "passes": false,
+      "priority": 21,
+      "acceptanceCriteria": "Hook encodes state object to compressed URL parameter. Decodes on mount. Uses lz-string compressToEncodedURIComponent. Handles missing/invalid params gracefully."
+    },
+    {
+      "id": "url-2",
+      "title": "Implement URL state encoding for camera, time, speed",
+      "passes": false,
+      "priority": 22,
+      "acceptanceCriteria": "URL updates when camera moves, time changes, or speed changes. Debounced to avoid excessive history entries. State schema versioned for future compatibility."
+    },
+    {
+      "id": "url-3",
+      "title": "Implement URL state restoration on page load",
+      "passes": false,
+      "priority": 23,
+      "acceptanceCriteria": "On mount, parse URL params and restore: camera position/target, current time, playback speed, visualization toggles. Smooth transition to restored state."
+    },
+    {
+      "id": "url-4",
+      "title": "Add Copy Link button with toast notification",
+      "passes": false,
+      "priority": 24,
+      "acceptanceCriteria": "Button in toolbar copies current URL to clipboard. Shows success toast. Uses navigator.clipboard API. Fallback for older browsers. Accessible button with icon."
+    },
+    {
+      "id": "polish-1",
+      "title": "Final integration test, performance verification, accessibility check",
+      "passes": false,
+      "priority": 25,
+      "acceptanceCriteria": "All features work together. TypeScript compiles clean. ESLint passes. 60fps maintained. <100 draw calls. Keyboard navigation works. Screen reader compatible. WCAG AA contrast."
+    }
+  ]
+}

@@ -8,7 +8,8 @@ tracker = "json"
 agent = "claude"
 
 # Maximum iterations before stopping
-maxIterations = 50
+# 97 stories + buffer for retries/complex tasks
+maxIterations = 150
 
 # Agent-specific options
 [agentOptions]

@@ -1,0 +1,31 @@
+# Ralph TUI Project Configuration
+# MeshMotion Biomechanics MVP
+
+# Task tracker format
+tracker = "json"
+
+# AI agent to use
+agent = "claude"
+
+# Maximum iterations before stopping
+maxIterations = 50
+
+# Agent-specific options
+[agentOptions]
+model = "sonnet"
+
+# Error handling strategy
+[errorHandling]
+strategy = "retry"      # retry | skip | abort
+maxRetries = 3
+retryDelayMs = 5000
+continueOnNonZeroExit = false
+
+# Subagent tracing (see nested agent calls)
+subagentTracingDetail = "moderate"  # off | minimal | moderate | full
+
+# Auto-commit after each successful task
+autoCommit = true
+
+# Sandbox mode (isolated execution)
+sandbox = false

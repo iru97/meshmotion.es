@@ -49,16 +49,33 @@ export function useKeyboardShortcuts() {
         useViewerStore.getState().toggleComparisonMode()
       }
 
+      // F - Toggle Fullscreen
+      if (key === 'f' && !ctrl && !shift) {
+        e.preventDefault()
+        // Use the Fullscreen API directly
+        const isCurrentlyFullscreen = !!document.fullscreenElement
+        if (isCurrentlyFullscreen) {
+          document.exitFullscreen?.()
+        } else {
+          document.documentElement.requestFullscreen?.()
+        }
+      }
+
       // S - Toggle Settings Sidebar
       if (key === 's' && !ctrl && !shift) {
         e.preventDefault()
         useViewerStore.getState().toggleRightSidebar()
       }
 
-      // T - Toggle Timeline
+      // T - Toggle Turntable (when model loaded) or Timeline (when no model)
       if (key === 't' && !ctrl && !shift) {
         e.preventDefault()
-        useViewerStore.getState().toggleTimeline()
+        const currentCharacter = useViewerStore.getState().currentCharacter
+        if (currentCharacter) {
+          useViewerStore.getState().toggleTurntable()
+        } else {
+          useViewerStore.getState().toggleTimeline()
+        }
       }
 
       // W - Toggle Wireframe
@@ -71,6 +88,24 @@ export function useKeyboardShortcuts() {
       if (key === 'k' && !ctrl && !shift) {
         e.preventDefault()
         useViewerStore.getState().toggleSkeleton()
+      }
+
+      // V - Toggle Camera Presets Panel (when model loaded)
+      if (key === 'v' && !ctrl && !shift) {
+        const currentCharacter = useViewerStore.getState().currentCharacter
+        if (currentCharacter) {
+          e.preventDefault()
+          useViewerStore.getState().toggleCameraPresets()
+        }
+      }
+
+      // I - Toggle Stats Overlay (when model loaded)
+      if (key === 'i' && !ctrl && !shift) {
+        const currentCharacter = useViewerStore.getState().currentCharacter
+        if (currentCharacter) {
+          e.preventDefault()
+          useViewerStore.getState().toggleStatsOverlay()
+        }
       }
 
       // 1-5 - Playback Speed Presets
@@ -100,6 +135,35 @@ export function useKeyboardShortcuts() {
         e.preventDefault()
         const loop = useViewerStore.getState().loop
         useViewerStore.getState().setLoop(!loop)
+      }
+
+      // P - Screenshot (only when model loaded and not in comparison mode)
+      if (key === 'p' && !ctrl && !shift) {
+        const comparisonEnabled = useViewerStore.getState().comparisonMode.enabled
+        const currentCharacter = useViewerStore.getState().currentCharacter
+        if (!comparisonEnabled && currentCharacter) {
+          e.preventDefault()
+          useViewerStore.getState().toggleScreenshotModal()
+        }
+      }
+
+      // R - Record video (only when model loaded and not in comparison mode)
+      if (key === 'r' && !ctrl && !shift) {
+        const comparisonEnabled = useViewerStore.getState().comparisonMode.enabled
+        const currentCharacter = useViewerStore.getState().currentCharacter
+        if (!comparisonEnabled && currentCharacter) {
+          e.preventDefault()
+          useViewerStore.getState().toggleRecordingModal()
+        }
+      }
+
+      // Shift+S - Share (only when model loaded)
+      if (key === 's' && !ctrl && shift) {
+        const currentCharacter = useViewerStore.getState().currentCharacter
+        if (currentCharacter) {
+          e.preventDefault()
+          useViewerStore.getState().toggleShareModal()
+        }
       }
 
       // Esc - Close panels/dialogs

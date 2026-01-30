@@ -112,3 +112,23 @@
 .glass-panel::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+/* Fullscreen UI auto-hide */
+.fullscreen-ui-element {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+body.fullscreen-ui-hidden .fullscreen-ui-element {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
+}
+
+/* Keep cursor visible hint when UI is hidden */
+body.fullscreen-ui-hidden {
+  cursor: none;
+}
+
+body.fullscreen-ui-hidden:hover {
+  cursor: auto;
+}

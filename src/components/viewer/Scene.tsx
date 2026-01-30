@@ -22,8 +22,26 @@ import { usePersistentStorage } from '@/hooks/use-persistent-storage'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { useURLParams } from '@/hooks/use-url-params'
 import { ExternalLoadModal } from '../upload/ExternalLoadModal'
+import { ScreenshotModal } from '../screenshot/ScreenshotModal'
+import { RecordingModal } from '../recording/RecordingModal'
+import { EmbedCodeModal } from '../embed/EmbedCodeModal'
+import { ShareModal } from '../share/ShareModal'
+import { TurntableRotation } from '../turntable/TurntableRotation'
+import { CameraPresetController } from '../camera/CameraPresetController'
+import { CameraPresetsPanel } from '../camera/CameraPresetsPanel'
+import { selectCameraPreset } from '../camera/CameraPresetController'
+import { AnnotationMarkers } from '../annotations/AnnotationMarker'
+import { AnnotationsPanel } from '../annotations/AnnotationsPanel'
+import { MeasurementLines } from '../measurements/MeasurementLine'
+import { MeasurementsPanel } from '../measurements/MeasurementsPanel'
+import { StatsOverlay } from '../stats/StatsOverlay'
+import { ExportPresetsPanel } from '../export/ExportPresetsPanel'
+import { CloudFeaturesPanel } from '../cloud/CloudFeaturesPanel'
+import { FullscreenUIController } from '../fullscreen/FullscreenUIController'
 
 export default function Scene() {
+  const cloudFeaturesPanelOpen = useViewerStore((state) => state.cloudFeaturesPanelOpen)
+  const toggleCloudFeaturesPanel = useViewerStore((state) => state.toggleCloudFeaturesPanel)
   const environmentPreset = useViewerStore((state) => state.environmentPreset)
   const comparisonEnabled = useViewerStore((state) => state.comparisonMode.enabled)
   const config = environmentPresets[environmentPreset]
@@ -65,6 +83,10 @@ export default function Scene() {
         <ComparisonControls />
         <ExportFormatMenu />
         <ExportModal />
+        <ScreenshotModal />
+        <RecordingModal />
+        <EmbedCodeModal />
+        <ShareModal />
 
         {/* External URL Load Modal */}
         <ExternalLoadModal
@@ -89,8 +111,9 @@ export default function Scene() {
         shadows
         gl={{
           antialias: true,
-          alpha: false,
+          alpha: true,
           powerPreference: 'high-performance',
+          preserveDrawingBuffer: true,
         }}
         dpr={[1, 2]}
       >
@@ -113,6 +136,18 @@ export default function Scene() {
 
         {/* 3D Model */}
         <Model />
+
+        {/* Turntable Rotation */}
+        <TurntableRotation />
+
+        {/* Camera Preset Controller */}
+        <CameraPresetController />
+
+        {/* Annotation Markers */}
+        <AnnotationMarkers />
+
+        {/* Measurement Lines */}
+        <MeasurementLines />
 
         {/* Camera Controls */}
         <OrbitControls
@@ -150,6 +185,39 @@ export default function Scene() {
       <ExportFormatMenu />
       <ExportModal />
 
+      {/* Screenshot Modal */}
+      <ScreenshotModal />
+
+      {/* Recording Modal */}
+      <RecordingModal />
+
+      {/* Embed Code Modal */}
+      <EmbedCodeModal />
+
+      {/* Share Modal */}
+      <ShareModal />
+
+      {/* Camera Presets Panel */}
+      <CameraPresetsPanel onSelectPreset={selectCameraPreset} />
+
+      {/* Annotations Panel */}
+      <AnnotationsPanel />
+
+      {/* Measurements Panel */}
+      <MeasurementsPanel />
+
+      {/* Stats Overlay */}
+      <StatsOverlay />
+
+      {/* Export Presets Panel */}
+      <ExportPresetsPanel />
+
+      {/* Cloud Features Panel (Phase 4) */}
+      <CloudFeaturesPanel
+        isOpen={cloudFeaturesPanelOpen}
+        onClose={toggleCloudFeaturesPanel}
+      />
+
       {/* External URL Load Modal */}
       <ExternalLoadModal
         fileInfo={pendingExternalFile}
@@ -161,6 +229,9 @@ export default function Scene() {
         onCancel={cancelExternalLoad}
         onClearError={clearError}
       />
+
+      {/* Fullscreen UI Controller */}
+      <FullscreenUIController />
     </div>
   )
 }

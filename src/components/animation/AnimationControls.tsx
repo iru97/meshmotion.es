@@ -364,7 +364,7 @@ export function AnimationControls() {
   }
 
   return (
-    <div className="fixed bottom-20 left-0 right-0 z-20 px-6">
+    <div className="fixed bottom-20 left-0 right-0 z-20 px-6 fullscreen-ui-element">
       <div className="max-w-7xl mx-auto flex flex-col gap-3">
         {/* Timeline Container */}
         <div className="glass-panel-dark px-6 py-3 rounded-full flex items-center gap-4">

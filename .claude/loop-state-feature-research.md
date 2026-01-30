@@ -1893,6 +1893,447 @@ window.parent.postMessage({event: 'timeUpdate', time: 5.2}, parentOrigin);
 
 ---
 
+---
+
+## FEATURE REQUIREMENTS SYNTHESIS
+
+### Feature 1: Muscle Activation Heatmap
+
+**MUST-HAVE (MVP):**
+- [ ] Vertex color-based heatmap rendering (0-1 normalized values)
+- [ ] Perceptually uniform colormap (viridis default)
+- [ ] Time-synced activation data playback
+- [ ] Basic legend showing activation scale
+- [ ] Toggle visibility on/off
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Multiple colormap options (cividis, inferno, plasma)
+- [ ] Opacity/intensity slider
+- [ ] Per-muscle group toggling
+- [ ] Activation threshold filtering
+- [ ] Colorblind-safe mode selector
+
+**FUTURE POSSIBILITIES:**
+- [ ] WebGL shader-based rendering for complex models
+- [ ] Real-time EMG data input
+- [ ] Comparative heatmaps (overlay two datasets)
+- [ ] Export heatmap as image sequence
+
+**TECHNICAL NOTES:**
+- Use THREE.Color with vertex colors for efficiency
+- Avoid texture-based approach (memory intensive)
+- Whitespace opportunity: NO web tool does this dynamically
+
+---
+
+### Feature 2: Trajectory Playback & Ghost Trails
+
+**MUST-HAVE (MVP):**
+- [ ] Play/pause/scrub timeline controls
+- [ ] Playback speed control (0.25x - 2x)
+- [ ] Current frame indicator
+- [ ] Loop toggle
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Ghost trail visualization (configurable count)
+- [ ] Onion skinning (previous/next frames)
+- [ ] Trajectory path lines
+- [ ] Keyframe markers
+- [ ] J/K/L keyboard shortcuts
+
+**FUTURE POSSIBILITIES:**
+- [ ] Motion blur effect
+- [ ] Velocity-based coloring
+- [ ] A/B range looping
+- [ ] Export as GIF/MP4
+
+**TECHNICAL NOTES:**
+- Store pose history in circular buffer for trails
+- Use InstancedMesh for ghost rendering
+- Frame interpolation for smooth scrubbing
+
+---
+
+### Feature 3: Shareable URL State
+
+**MUST-HAVE (MVP):**
+- [ ] Encode camera position in URL
+- [ ] Encode current time/frame
+- [ ] Copy link button
+- [ ] URL restoration on load
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Encode lighting preset
+- [ ] Encode material/environment settings
+- [ ] QR code generation
+- [ ] Short URL generation (optional service)
+
+**FUTURE POSSIBILITIES:**
+- [ ] Encode annotations/markers
+- [ ] Version parameter for backwards compatibility
+- [ ] Analytics on shared links
+
+**TECHNICAL NOTES:**
+- Use lz-string for compression
+- Base64 URL-safe encoding
+- ~2KB URL limit practical maximum
+- useSearchParams() for React integration
+
+---
+
+### Feature 4: Biomechanics Data Import
+
+**MUST-HAVE (MVP):**
+- [ ] BVH file import (BVHImporter exists)
+- [ ] CSV/JSON motion data import
+- [ ] Drag-and-drop file upload
+- [ ] Format auto-detection
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] C3D file import (needs WASM parser)
+- [ ] OpenSim .osim/.mot import
+- [ ] Batch file import
+- [ ] Data preview before apply
+
+**FUTURE POSSIBILITIES:**
+- [ ] TRC (marker data) import
+- [ ] FBX animation import
+- [ ] Direct OpenCap API connection
+- [ ] Real-time streaming input
+
+**TECHNICAL NOTES:**
+- C3D: No JS parser exists - consider c3d-parser WASM port
+- BVH: Use three/examples/jsm/loaders/BVHLoader
+- Validation crucial for malformed files
+
+---
+
+### Feature 5: Force Vector Visualization
+
+**MUST-HAVE (MVP):**
+- [ ] Arrow/cone visualization for forces
+- [ ] Magnitude-scaled length
+- [ ] Direction indicator
+- [ ] Toggle visibility
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Force magnitude labels
+- [ ] Color-coded by force type (GRF, muscle, joint)
+- [ ] Opacity based on confidence
+- [ ] Force history trails
+
+**FUTURE POSSIBILITIES:**
+- [ ] Force decomposition (X/Y/Z components)
+- [ ] Moment/torque visualization
+- [ ] Contact point highlighting
+- [ ] Real-time force plate input
+
+**TECHNICAL NOTES:**
+- Use THREE.ArrowHelper or custom mesh
+- InstancedMesh for multiple force vectors
+- Scale factor for visual clarity (forces often very large)
+
+---
+
+### Feature 6: Side-by-Side Comparison View
+
+**MUST-HAVE (MVP):**
+- [ ] Split-screen layout (vertical/horizontal)
+- [ ] Independent camera controls
+- [ ] Synchronized playback toggle
+- [ ] Load different models per view
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Overlay mode (transparency blend)
+- [ ] Difference highlighting
+- [ ] Synchronized camera option
+- [ ] More than 2 views (quad view)
+
+**FUTURE POSSIBILITIES:**
+- [ ] Automated difference metrics
+- [ ] Before/after slider overlay
+- [ ] Export comparison as video
+- [ ] Timeline difference markers
+
+**TECHNICAL NOTES:**
+- Two Canvas instances or viewport splitting
+- Shared animation clock for sync
+- Consider WebGL context limits (max ~8-16)
+
+---
+
+### Feature 7: Embed/iframe Integration
+
+**MUST-HAVE (MVP):**
+- [ ] Embed code generator (iframe)
+- [ ] Responsive sizing
+- [ ] Minimal chrome option
+- [ ] Basic customization params
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Custom branding toggle
+- [ ] Interaction restrictions (view-only)
+- [ ] postMessage API for parent control
+- [ ] Preload/lazy-load options
+
+**FUTURE POSSIBILITIES:**
+- [ ] Web Component version
+- [ ] npm package for React/Vue
+- [ ] Embed analytics
+- [ ] Custom styling injection
+
+**TECHNICAL NOTES:**
+- Follow Sketchfab/YouTube embed patterns
+- postMessage for cross-origin communication
+- Consider Content Security Policy implications
+
+---
+
+### Feature 8: Live Webcam Pose Capture
+
+**MUST-HAVE (MVP):**
+- [ ] MediaPipe Pose integration
+- [ ] Real-time skeleton overlay
+- [ ] Start/stop capture controls
+- [ ] Privacy indicator (camera active)
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Pose smoothing filters (One-Euro)
+- [ ] Confidence threshold display
+- [ ] Recording to motion data
+- [ ] Mirror/flip toggle
+
+**FUTURE POSSIBILITIES:**
+- [ ] Multi-person tracking (requires different solution)
+- [ ] Hand tracking integration
+- [ ] Face mesh integration
+- [ ] AR overlay mode
+
+**TECHNICAL NOTES:**
+- MediaPipe: 33 landmarks, CPU-based
+- One-Euro filter best for real-time smoothing
+- Single person only (limitation)
+- ~10° angle accuracy, ~0.1m position accuracy
+
+---
+
+### Feature 9: Markers & Annotations
+
+**MUST-HAVE (MVP):**
+- [ ] Point markers on model
+- [ ] Text labels
+- [ ] Marker persistence (saved with scene)
+- [ ] Basic marker editing (move, delete)
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Time-based markers (appear at specific frames)
+- [ ] Marker categories/colors
+- [ ] Distance/angle measurement tools
+- [ ] Import markers from CSV
+
+**FUTURE POSSIBILITIES:**
+- [ ] Collaborative annotations (multi-user)
+- [ ] Voice annotation recording
+- [ ] AI-suggested markers (joint detection)
+- [ ] Export annotations separately
+
+**TECHNICAL NOTES:**
+- Use drei's Html component for labels
+- Raycasting for marker placement
+- Shadow DOM for accessibility
+- Store in scene metadata
+
+---
+
+### Feature 10: Screenshot & Video Export
+
+**MUST-HAVE (MVP):**
+- [ ] Screenshot capture (PNG)
+- [ ] Resolution options
+- [ ] Transparent background option
+- [ ] Download with timestamp filename
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Video recording (WebM/MP4)
+- [ ] Recording duration control
+- [ ] Include/exclude UI option
+- [ ] Watermark option
+
+**FUTURE POSSIBILITIES:**
+- [ ] 360° turntable export
+- [ ] Frame sequence export
+- [ ] Direct share to social
+- [ ] Cloud rendering for high-res
+
+**TECHNICAL NOTES:**
+- renderer.domElement.toDataURL() for screenshots
+- MediaRecorder API for video
+- preserveDrawingBuffer: true required
+- Consider ccapture.js for high-quality video
+
+---
+
+### Feature 11: REST API for Programmatic Access
+
+**MUST-HAVE (MVP):**
+- [ ] GET endpoints for model list
+- [ ] POST endpoint for model upload
+- [ ] Basic authentication (API key)
+- [ ] JSON response format
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Batch operations
+- [ ] Webhooks for events
+- [ ] Rate limiting
+- [ ] API key management UI
+
+**FUTURE POSSIBILITIES:**
+- [ ] GraphQL API
+- [ ] WebSocket for real-time
+- [ ] SDK packages (Python, JS)
+- [ ] OAuth for third-party apps
+
+**TECHNICAL NOTES:**
+- MeshMotion is client-side - API requires backend
+- Consider serverless functions (Vercel/Netlify)
+- OpenAPI/Swagger documentation
+- CORS configuration critical
+
+---
+
+### Feature 12: LMS Integration
+
+**MUST-HAVE (MVP):**
+- [ ] LTI 1.3 launch support
+- [ ] Grade passback
+- [ ] User identification
+- [ ] Basic assignment type
+
+**NICE-TO-HAVE (v1.1):**
+- [ ] Deep linking
+- [ ] Progress tracking
+- [ ] Custom parameters
+- [ ] Canvas/Moodle/Blackboard tested
+
+**FUTURE POSSIBILITIES:**
+- [ ] Interactive assessments
+- [ ] Automatic grading based on pose
+- [ ] Class-wide analytics
+- [ ] SCORM export
+
+**TECHNICAL NOTES:**
+- LTI 1.3 uses OAuth 2.0 + JWT
+- Requires backend for token validation
+- Test with Canvas (free dev account)
+- Consider https://ltijs.js.org/
+
+---
+
+## IMPLEMENTATION PRIORITY MATRIX
+
+### Tier 1: Core Differentiators (Unique Value)
+| Feature | Effort | Impact | Priority |
+|---------|--------|--------|----------|
+| Muscle Activation Heatmap | High | Very High | **P0** |
+| Force Vector Visualization | Medium | High | **P0** |
+| Biomechanics Data Import | High | Very High | **P0** |
+
+**Rationale:** These create unique market position - no web tool does dynamic muscle visualization
+
+### Tier 2: Essential UX (Expected Features)
+| Feature | Effort | Impact | Priority |
+|---------|--------|--------|----------|
+| Trajectory Playback | Medium | High | **P1** |
+| Shareable URL State | Low | High | **P1** |
+| Screenshot/Video Export | Low | Medium | **P1** |
+| Markers & Annotations | Medium | Medium | **P1** |
+
+**Rationale:** Users expect these in any professional visualization tool
+
+### Tier 3: Growth Features (Expansion)
+| Feature | Effort | Impact | Priority |
+|---------|--------|--------|----------|
+| Side-by-Side Comparison | Medium | High | **P2** |
+| Embed/iframe | Medium | Medium | **P2** |
+| Live Webcam Pose | High | Medium | **P2** |
+
+**Rationale:** Enable new use cases and distribution channels
+
+### Tier 4: Platform Features (Ecosystem)
+| Feature | Effort | Impact | Priority |
+|---------|--------|--------|----------|
+| REST API | Very High | Medium | **P3** |
+| LMS Integration | Very High | Niche | **P3** |
+
+**Rationale:** Require backend infrastructure, smaller audience
+
+---
+
+## DEPENDENCY GRAPH
+
+```
+[Data Import] ──────────────────┐
+       │                        │
+       ▼                        ▼
+[Trajectory Playback] ←── [Muscle Heatmap]
+       │                        │
+       ▼                        ▼
+[Shareable URL] ←──────── [Force Vectors]
+       │
+       ▼
+[Screenshot/Video Export]
+       │
+       ▼
+[Markers & Annotations]
+       │
+       ▼
+[Comparison View]
+       │
+       ▼
+[Embed/iframe]
+       │
+       ▼
+[Live Pose] (independent, can be parallel)
+       │
+       ▼
+[REST API] (requires backend decision)
+       │
+       ▼
+[LMS Integration]
+```
+
+---
+
+## MVP DEFINITION
+
+### MeshMotion Biomechanics MVP
+
+**Core Features (Must Ship):**
+1. Biomechanics Data Import (BVH + CSV)
+2. Muscle Activation Heatmap (vertex colors)
+3. Trajectory Playback (play/pause/scrub)
+4. Basic Force Vectors
+5. Shareable URL State
+
+**Success Metrics:**
+- Can load biomechanics motion data
+- Can visualize muscle activation over time
+- Can share specific view with URL
+- Maintains 60fps with medium complexity model
+
+**Technical Constraints:**
+- Client-side only (no backend)
+- Works on modern browsers (Chrome, Firefox, Safari, Edge)
+- Mobile-responsive (reduced features OK)
+
+**Out of Scope for MVP:**
+- C3D import (needs WASM development)
+- REST API (needs backend)
+- LMS integration (needs backend)
+- Multi-person pose tracking
+
+---
+
 ## NEXT SESSION INSTRUCTIONS
 
 1. Read this file
@@ -1928,4 +2369,424 @@ window.parent.postMessage({event: 'timeUpdate', time: 5.2}, parentOrigin);
   - MediaPipe: Kalman/EMA/One-Euro filters for jitter
   - OpenCap: .osim/.mot/.sto formats, normalized activations
 - ~180 subphases covered
-- Next: Synthesize into feature requirements, then PRD
+
+### Session 3 (2026-01-30 continued)
+- Synthesized all findings into feature requirements
+- Created must-have / nice-to-have / future lists for all 12 features
+- Defined priority tiers (P0-P3)
+- Created dependency graph
+- Defined MVP scope
+- Created PRD structure
+- Next: Create ralph-tui implementation state file
+
+---
+
+## PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+### Document Information
+| Field | Value |
+|-------|-------|
+| **Product Name** | MeshMotion Biomechanics |
+| **Version** | 1.0 (MVP) |
+| **Date** | 2026-01-30 |
+| **Status** | Draft - Pending Approval |
+| **Author** | Research Phase |
+
+---
+
+### 1. Executive Summary
+
+MeshMotion Biomechanics extends the existing MeshMotion 3D viewer with specialized biomechanics visualization capabilities. The primary innovation is **dynamic muscle activation heatmaps** - a feature that NO existing web-based tool provides. This positions MeshMotion as the first web-native solution for researchers, educators, and practitioners who need to visualize motion and muscle data without desktop software installation.
+
+**Key Value Proposition:**
+- First web-based dynamic muscle activation visualization
+- Format-agnostic biomechanics data import (BVH, CSV, future C3D)
+- Shareable URLs for collaboration and teaching
+- No installation required - works in any modern browser
+
+---
+
+### 2. Problem Statement
+
+**Current Pain Points:**
+1. Researchers use desktop-only tools (OpenSim, Visual3D) that require installation
+2. Sharing visualizations requires screen recordings or static images
+3. No tool shows dynamic muscle activation synchronized with motion
+4. Collaboration requires all parties to have same software installed
+5. Embedding biomechanics content in web pages is impossible
+
+**Target Users:**
+- Biomechanics researchers
+- Physical therapy educators
+- Sports science analysts
+- Medical professionals teaching anatomy/movement
+- Students learning human motion
+
+---
+
+### 3. Goals & Success Metrics
+
+**Primary Goals:**
+1. Enable web-based muscle activation visualization
+2. Support common biomechanics data formats
+3. Provide shareable, embeddable visualizations
+
+**Success Metrics:**
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Load time (medium model) | <3 seconds | Performance testing |
+| Frame rate | 60 FPS sustained | stats-gl monitoring |
+| Memory usage | <500MB | DevTools profiling |
+| Draw calls | <100 | renderer.info |
+| URL state encoding | <2KB | lz-string compression |
+| Browser support | 95%+ modern browsers | BrowserStack testing |
+
+---
+
+### 4. MVP Feature Specifications
+
+#### 4.1 Biomechanics Data Import (P0)
+
+**User Story:** As a researcher, I want to load my motion capture data into MeshMotion so I can visualize it alongside 3D models.
+
+**Acceptance Criteria:**
+- [ ] BVH files load with skeleton visualization
+- [ ] CSV motion data maps to model joints
+- [ ] Drag-and-drop file upload works
+- [ ] Invalid files show clear error messages
+- [ ] File format is auto-detected
+
+**Technical Specifications:**
+- Use THREE.BVHLoader from examples/jsm/loaders
+- CSV parser: PapaParse (robust, handles edge cases)
+- Max file size: 50MB (client-side processing)
+- Supported encodings: UTF-8, ASCII
+
+---
+
+#### 4.2 Muscle Activation Heatmap (P0)
+
+**User Story:** As a biomechanics educator, I want to see muscle activation levels change over time so I can explain muscle coordination patterns.
+
+**Acceptance Criteria:**
+- [ ] Muscle regions colored by activation level (0-1 normalized)
+- [ ] Colors update synchronously with animation playback
+- [ ] Default colormap is perceptually uniform (viridis)
+- [ ] Legend shows activation scale
+- [ ] Heatmap can be toggled on/off
+
+**Technical Specifications:**
+- Vertex color approach (not texture-based)
+- THREE.Color interpolation for smooth gradients
+- Data format: `{ timestamp: number, muscles: { [name: string]: number } }`
+- Performance target: <1ms per frame update
+
+**Colormap Options:**
+| Name | Use Case | Colorblind Safe |
+|------|----------|-----------------|
+| viridis | Default, general use | Yes |
+| cividis | Colorblind optimized | Yes |
+| inferno | High contrast | Partial |
+| plasma | Publication ready | Partial |
+
+---
+
+#### 4.3 Trajectory Playback (P0)
+
+**User Story:** As a sports analyst, I want to scrub through motion data to find specific moments of interest.
+
+**Acceptance Criteria:**
+- [ ] Play/pause button toggles playback
+- [ ] Timeline slider scrubs through animation
+- [ ] Speed control (0.25x, 0.5x, 1x, 1.5x, 2x)
+- [ ] Current time display (MM:SS.ms)
+- [ ] Loop toggle
+
+**Technical Specifications:**
+- Zustand store for playback state
+- AnimationMixer.update(delta) in useFrame
+- Keyboard shortcuts: Space (play/pause), Left/Right (±1 frame)
+- requestAnimationFrame for smooth updates
+
+---
+
+#### 4.4 Force Vector Visualization (P0)
+
+**User Story:** As a physical therapist, I want to see force vectors to understand loading patterns during movement.
+
+**Acceptance Criteria:**
+- [ ] Force vectors display as arrows
+- [ ] Arrow length scales with magnitude
+- [ ] Arrow direction indicates force direction
+- [ ] Vectors can be toggled on/off
+- [ ] Color coding by force type (optional)
+
+**Technical Specifications:**
+- THREE.ArrowHelper for vector rendering
+- Scale factor: configurable (forces often very large in Newtons)
+- Origin points: attachment points on model
+- Update frequency: match animation framerate
+
+---
+
+#### 4.5 Shareable URL State (P1)
+
+**User Story:** As a professor, I want to share a specific view of a visualization with my students via a URL.
+
+**Acceptance Criteria:**
+- [ ] Camera position encoded in URL
+- [ ] Current playback time encoded
+- [ ] Playback state (paused/playing) encoded
+- [ ] "Copy Link" button copies URL to clipboard
+- [ ] Loading URL restores exact state
+
+**Technical Specifications:**
+- lz-string for compression
+- Base64url encoding (URL-safe)
+- State schema:
+```typescript
+interface URLState {
+  v: 1; // version for future compatibility
+  c: [number, number, number]; // camera position
+  t: [number, number, number]; // camera target
+  f: number; // current frame/time
+  p: boolean; // playing
+  s: number; // speed
+}
+```
+- Max URL length target: 2000 characters
+
+---
+
+### 5. User Interface Specifications
+
+#### 5.1 Layout
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  [Logo]  [File] [View]  [Share]           [Settings]    │  Top Bar
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│                                                         │
+│                    3D Viewport                          │  Main Area
+│                                                         │
+│                                                         │
+├─────────────────────────────────────────────────────────┤
+│  [◀][▶][⏸]  [═══════════●════════]  01:23.45  [1x▼]   │  Timeline
+├───────────────────────────┬─────────────────────────────┤
+│  Muscle Activation        │  Settings Panel             │
+│  ├ Heatmap: [✓]          │  ├ Lighting: [Studio▼]     │  Bottom
+│  ├ Colormap: [viridis▼]  │  ├ Material: [Default▼]   │  Panels
+│  └ Legend: [✓]           │  └ Background: [Dark▼]    │
+└───────────────────────────┴─────────────────────────────┘
+```
+
+#### 5.2 Component Hierarchy
+
+```
+app/
+└── biomechanics/
+    └── page.tsx
+        ├── BiomechanicsToolbar
+        │   ├── FileMenu (import)
+        │   ├── ViewMenu (presets)
+        │   └── ShareButton (URL copy)
+        ├── BiomechanicsScene
+        │   ├── Canvas (R3F)
+        │   │   ├── BiomechanicsModel
+        │   │   ├── MuscleHeatmap
+        │   │   ├── ForceVectors
+        │   │   └── OrbitControls
+        │   └── ActivationLegend
+        ├── TimelineControls
+        │   ├── PlayPauseButton
+        │   ├── TimelineSlider
+        │   ├── TimeDisplay
+        │   └── SpeedSelector
+        └── SettingsPanel
+            ├── ActivationSettings
+            └── VisualizationSettings
+```
+
+---
+
+### 6. Technical Architecture
+
+#### 6.1 Data Flow
+
+```
+File Upload → Format Detection → Parser → Normalized Data → Store → Renderers
+                    ↓                           ↓              ↓
+              [BVH/CSV/JSON]              [MotionData]    [Components]
+                                          [ActivationData]
+                                          [ForceData]
+```
+
+#### 6.2 State Management
+
+**New Zustand Store Slices:**
+```typescript
+interface BiomechanicsState {
+  // Motion data
+  motionData: MotionData | null;
+  activationData: ActivationData | null;
+  forceData: ForceData | null;
+
+  // Visualization settings
+  showHeatmap: boolean;
+  heatmapColormap: 'viridis' | 'cividis' | 'inferno' | 'plasma';
+  showForces: boolean;
+  forceScale: number;
+
+  // Actions
+  loadMotionData: (data: MotionData) => void;
+  loadActivationData: (data: ActivationData) => void;
+  setHeatmapColormap: (colormap: string) => void;
+  toggleHeatmap: () => void;
+  toggleForces: () => void;
+}
+```
+
+#### 6.3 File Structure
+
+```
+src/
+├── app/biomechanics/
+│   └── page.tsx
+├── components/biomechanics/
+│   ├── BiomechanicsScene.tsx
+│   ├── BiomechanicsToolbar.tsx
+│   ├── MuscleHeatmap.tsx
+│   ├── ForceVectors.tsx
+│   ├── TimelineControls.tsx
+│   └── ActivationLegend.tsx
+├── hooks/
+│   ├── use-bvh-loader.ts
+│   ├── use-activation-data.ts
+│   └── use-url-state.ts
+├── lib/
+│   ├── parsers/
+│   │   ├── bvh-parser.ts
+│   │   ├── csv-parser.ts
+│   │   └── activation-parser.ts
+│   ├── colormaps/
+│   │   └── index.ts
+│   └── store/
+│       └── biomechanics-store.ts
+└── types/
+    └── biomechanics.ts
+```
+
+---
+
+### 7. Implementation Phases
+
+#### Phase 1: Foundation (Week 1-2)
+- [ ] Create /biomechanics route
+- [ ] Set up BiomechanicsScene component
+- [ ] Create biomechanics-store.ts
+- [ ] Define TypeScript interfaces
+- [ ] Basic timeline controls
+
+#### Phase 2: Data Import (Week 2-3)
+- [ ] BVH parser integration
+- [ ] CSV parser for motion data
+- [ ] Activation data parser
+- [ ] File upload UI
+- [ ] Format validation
+
+#### Phase 3: Visualization (Week 3-4)
+- [ ] Muscle heatmap rendering
+- [ ] Colormap implementation
+- [ ] Force vector rendering
+- [ ] Activation legend
+- [ ] Synchronized playback
+
+#### Phase 4: Sharing (Week 4-5)
+- [ ] URL state encoding
+- [ ] URL state restoration
+- [ ] Copy link UI
+- [ ] Deep link validation
+
+#### Phase 5: Polish (Week 5-6)
+- [ ] Performance optimization
+- [ ] Accessibility audit
+- [ ] Cross-browser testing
+- [ ] Documentation
+
+---
+
+### 8. Risks & Mitigations
+
+| Risk | Impact | Likelihood | Mitigation |
+|------|--------|------------|------------|
+| Performance with large datasets | High | Medium | Implement data decimation, LOD |
+| BVH format variations | Medium | High | Test with multiple sources, fallback parsing |
+| Memory leaks in heatmap updates | High | Medium | Strict disposal patterns, memory profiling |
+| URL length limits | Low | Low | Use hash fragment, fallback to shorter encoding |
+| WebGL context loss | High | Low | Implement context restoration handler |
+
+---
+
+### 9. Out of Scope (Future Versions)
+
+- C3D file format (requires WASM parser development)
+- Multi-person tracking
+- REST API / backend services
+- LMS integration
+- Real-time EMG input
+- Mobile app version
+
+---
+
+### 10. Appendices
+
+#### Appendix A: Colormap Specifications
+
+**Viridis (Default):**
+```javascript
+const viridis = [
+  [0.267004, 0.004874, 0.329415],  // 0.0 - dark purple
+  [0.282327, 0.140926, 0.457517],  // 0.1
+  [0.253935, 0.265254, 0.529983],  // 0.2
+  [0.206756, 0.371758, 0.553117],  // 0.3
+  [0.163625, 0.471133, 0.558148],  // 0.4
+  [0.127568, 0.566949, 0.550556],  // 0.5
+  [0.134692, 0.658636, 0.517649],  // 0.6
+  [0.266941, 0.748751, 0.440573],  // 0.7
+  [0.477504, 0.821444, 0.318195],  // 0.8
+  [0.741388, 0.873449, 0.149561],  // 0.9
+  [0.993248, 0.906157, 0.143936],  // 1.0 - yellow
+];
+```
+
+#### Appendix B: Data Format Examples
+
+**Activation Data (JSON):**
+```json
+{
+  "version": "1.0",
+  "muscles": ["biceps_l", "biceps_r", "triceps_l", "triceps_r"],
+  "framerate": 100,
+  "frames": [
+    {"time": 0.00, "activations": [0.12, 0.15, 0.05, 0.04]},
+    {"time": 0.01, "activations": [0.18, 0.20, 0.03, 0.03]},
+    {"time": 0.02, "activations": [0.25, 0.28, 0.02, 0.02]}
+  ]
+}
+```
+
+**Motion Data (CSV):**
+```csv
+time,joint,x,y,z,rx,ry,rz
+0.00,hip,0,1,0,0,0,0
+0.00,knee_l,0.1,0.5,0,0,0,0
+0.01,hip,0,1.01,0,0,0.1,0
+0.01,knee_l,0.1,0.51,0,0.05,0,0
+```
+
+---
+
+## RESEARCH COMPLETE
+
+This PRD is ready for review and implementation planning. The ralph-tui loop can be used to implement each phase systematically with validation at each step.

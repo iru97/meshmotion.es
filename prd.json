@@ -14,168 +14,539 @@
       "title": "Create types/biomechanics.ts with TypeScript interfaces",
       "passes": false,
       "priority": 2,
-      "acceptanceCriteria": "Interfaces defined: MotionData, ActivationData, ForceData, BiomechanicsState. All types exported. No TypeScript errors."
+      "acceptanceCriteria": "Interfaces defined: MotionData, ActivationData, ForceData, BiomechanicsState, MuscleInfo, JointData. All types exported. No TypeScript errors."
     },
     {
       "id": "foundation-3",
       "title": "Create lib/store/biomechanics-store.ts Zustand store",
       "passes": false,
       "priority": 3,
-      "acceptanceCriteria": "Store created with state: motionData, activationData, forceData, showHeatmap, showForces, playback state. Actions for loading data and toggling visualization. Uses selector pattern like viewer-store.ts."
+      "acceptanceCriteria": "Store created with state: motionData, activationData, forceData, showHeatmap, showForces, heatmapColormap, forceScale. Actions for loading data and toggling visualization. Uses selector pattern like viewer-store.ts."
     },
     {
       "id": "foundation-4",
       "title": "Create components/biomechanics/BiomechanicsScene.tsx",
       "passes": false,
       "priority": 4,
-      "acceptanceCriteria": "Component renders R3F Canvas with OrbitControls and Environment. Connects to biomechanics-store. Follows existing Scene.tsx patterns."
+      "acceptanceCriteria": "Component renders R3F Canvas with OrbitControls, Environment, and basic lighting. Connects to biomechanics-store. Follows existing Scene.tsx patterns. preserveDrawingBuffer: true for screenshots."
     },
     {
       "id": "foundation-5",
-      "title": "Add basic layout with Canvas and placeholder panels",
+      "title": "Add basic page layout with Canvas and placeholder panels",
       "passes": false,
       "priority": 5,
-      "acceptanceCriteria": "Page has layout: top toolbar placeholder, main 3D viewport, bottom timeline placeholder, side settings placeholder. Responsive design with Tailwind."
+      "acceptanceCriteria": "Page has layout: top toolbar placeholder, main 3D viewport (BiomechanicsScene), bottom timeline placeholder, side settings placeholder. Responsive design with Tailwind. Glassmorphism styling matches existing app."
     },
     {
       "id": "timeline-1",
       "title": "Create components/biomechanics/TimelineControls.tsx",
       "passes": false,
       "priority": 6,
-      "acceptanceCriteria": "Component renders timeline bar with play button, slider, time display, speed selector. Uses shadcn/ui Slider and Button components."
+      "acceptanceCriteria": "Component renders timeline bar container. Uses shadcn/ui components. Fixed at bottom of viewport. Integrates with biomechanics-store for playback state."
     },
     {
       "id": "timeline-2",
-      "title": "Implement play/pause button with Space keyboard shortcut",
+      "title": "Implement play/pause button with icons",
       "passes": false,
       "priority": 7,
-      "acceptanceCriteria": "Play/pause toggles isPlaying in store. Space bar toggles playback. Button shows correct icon (Play/Pause). Accessible with aria-label."
+      "acceptanceCriteria": "Play/pause button toggles isPlaying in store. Button shows correct icon (Play/Pause from lucide-react). Accessible with aria-label. Visual feedback on hover/active."
     },
     {
       "id": "timeline-3",
-      "title": "Implement timeline slider with frame scrubbing",
+      "title": "Add Space keyboard shortcut for play/pause",
       "passes": false,
       "priority": 8,
-      "acceptanceCriteria": "Slider value syncs with currentTime in store. Dragging updates time. Animation mixer responds to time changes. Smooth scrubbing without jitter."
+      "acceptanceCriteria": "Space bar toggles playback when focus is not on input elements. Uses useEffect with keydown listener. Prevents default scroll behavior. Works globally on the page."
     },
     {
       "id": "timeline-4",
-      "title": "Implement speed selector (0.25x-2x)",
+      "title": "Implement timeline slider with frame scrubbing",
       "passes": false,
       "priority": 9,
-      "acceptanceCriteria": "Dropdown with speed options: 0.25x, 0.5x, 1x, 1.5x, 2x. Selection updates playbackSpeed in store. Animation respects speed setting."
+      "acceptanceCriteria": "Slider value syncs with currentTime in store. Dragging updates time immediately. Animation mixer responds to time changes. Smooth scrubbing without jitter. Uses shadcn/ui Slider."
     },
     {
       "id": "timeline-5",
-      "title": "Add time display in MM:SS.ms format",
+      "title": "Implement playback speed selector dropdown",
       "passes": false,
       "priority": 10,
-      "acceptanceCriteria": "Shows current time and total duration. Format: 01:23.45 / 02:00.00. Updates in real-time during playback. Monospace font for stability."
+      "acceptanceCriteria": "Dropdown with speed options: 0.25x, 0.5x, 1x, 1.5x, 2x. Selection updates playbackSpeed in store. Current speed displayed. Animation respects speed setting. Uses shadcn/ui Select."
+    },
+    {
+      "id": "timeline-6",
+      "title": "Add time display in MM:SS.ms format",
+      "passes": false,
+      "priority": 11,
+      "acceptanceCriteria": "Shows current time and total duration. Format: 01:23.45 / 02:00.00. Updates in real-time during playback. Monospace font for visual stability. No jitter on number changes."
+    },
+    {
+      "id": "timeline-7",
+      "title": "Implement loop toggle button",
+      "passes": false,
+      "priority": 12,
+      "acceptanceCriteria": "Loop button toggles loop mode in store. Visual indicator when loop is enabled. Animation loops back to start when reaching end. Icon from lucide-react (Repeat)."
+    },
+    {
+      "id": "timeline-8",
+      "title": "Add left/right arrow key frame stepping",
+      "passes": false,
+      "priority": 13,
+      "acceptanceCriteria": "Left arrow steps back one frame, right arrow steps forward one frame. Frame step size calculated from animation duration. Works when animation is paused. Prevents default scroll behavior."
     },
     {
       "id": "import-1",
       "title": "Create lib/parsers/bvh-parser.ts using THREE.BVHLoader",
       "passes": false,
-      "priority": 11,
-      "acceptanceCriteria": "Parser loads BVH files using three/examples/jsm/loaders/BVHLoader. Returns skeleton and animation clip. Handles parse errors gracefully with Result pattern."
+      "priority": 14,
+      "acceptanceCriteria": "Parser loads BVH files using three/examples/jsm/loaders/BVHLoader. Returns skeleton and animation clip. Handles parse errors gracefully with Result pattern. Validates file structure."
     },
     {
       "id": "import-2",
       "title": "Create lib/parsers/csv-parser.ts for motion data",
       "passes": false,
-      "priority": 12,
-      "acceptanceCriteria": "Parses CSV with columns: time, joint, x, y, z, rx, ry, rz. Converts to MotionData interface. Validates required columns. Error messages for malformed data."
+      "priority": 15,
+      "acceptanceCriteria": "Parses CSV with columns: time, joint, x, y, z, rx, ry, rz. Converts to MotionData interface. Validates required columns exist. Error messages for malformed data. Handles different delimiters (comma, semicolon, tab)."
     },
     {
       "id": "import-3",
       "title": "Create lib/parsers/activation-parser.ts for muscle data",
       "passes": false,
-      "priority": 13,
-      "acceptanceCriteria": "Parses JSON activation data with version, muscles array, framerate, frames. Validates schema. Normalizes activation values to 0-1 range."
+      "priority": 16,
+      "acceptanceCriteria": "Parses JSON activation data with version, muscles array, framerate, frames. Validates schema matches expected format. Normalizes activation values to 0-1 range. Clear errors for invalid data."
     },
     {
       "id": "import-4",
-      "title": "Create hooks/use-biomechanics-loader.ts hook",
+      "title": "Create lib/parsers/force-parser.ts for force data",
       "passes": false,
-      "priority": 14,
-      "acceptanceCriteria": "Hook handles file input, detects format (BVH/CSV/JSON), calls appropriate parser, updates store. Returns isLoading, error states. Follows use-gltf-loader.ts pattern."
+      "priority": 17,
+      "acceptanceCriteria": "Parses force data JSON/CSV with time, point, magnitude, direction (x,y,z). Converts to ForceData interface. Validates force values are reasonable. Supports multiple force types."
     },
     {
       "id": "import-5",
-      "title": "Add drag-and-drop file upload UI",
+      "title": "Create hooks/use-biomechanics-loader.ts hook",
       "passes": false,
-      "priority": 15,
-      "acceptanceCriteria": "Drop zone accepts BVH, CSV, JSON files. Visual feedback on drag over. Shows file name after load. Error toast for unsupported formats. Click to browse option."
+      "priority": 18,
+      "acceptanceCriteria": "Hook handles file input, detects format (BVH/CSV/JSON) by extension and content. Calls appropriate parser. Updates store with loaded data. Returns isLoading, error, progress states. Follows use-gltf-loader.ts pattern."
+    },
+    {
+      "id": "import-6",
+      "title": "Implement format auto-detection logic",
+      "passes": false,
+      "priority": 19,
+      "acceptanceCriteria": "Detects BVH by HIERARCHY keyword, CSV by delimiter analysis, JSON by parsing attempt. Falls back to extension if content detection fails. Returns detected format type. Logs detection reasoning."
+    },
+    {
+      "id": "import-7",
+      "title": "Add drag-and-drop file upload UI component",
+      "passes": false,
+      "priority": 20,
+      "acceptanceCriteria": "Drop zone accepts BVH, CSV, JSON files. Visual feedback on drag over (border highlight). Shows file name after load. Error toast for unsupported formats. Click to browse option."
+    },
+    {
+      "id": "import-8",
+      "title": "Add file validation with error toasts",
+      "passes": false,
+      "priority": 21,
+      "acceptanceCriteria": "Validates file size (<50MB), file type, content structure. Shows specific error messages via toast. Suggests fixes for common issues. Clears previous errors on new upload."
     },
     {
       "id": "viz-1",
-      "title": "Create lib/colormaps/index.ts with viridis, cividis, etc.",
+      "title": "Create lib/colormaps/index.ts with viridis colormap",
       "passes": false,
-      "priority": 16,
-      "acceptanceCriteria": "Exports colormap functions: viridis, cividis, inferno, plasma. Each takes 0-1 value, returns THREE.Color. Perceptually uniform interpolation."
+      "priority": 22,
+      "acceptanceCriteria": "Exports viridis function taking 0-1 value, returns THREE.Color. Uses perceptually uniform interpolation. 256-step lookup table for performance. Matches matplotlib viridis exactly."
     },
     {
       "id": "viz-2",
-      "title": "Create components/biomechanics/MuscleHeatmap.tsx with vertex colors",
+      "title": "Add cividis, inferno, plasma colormaps",
       "passes": false,
-      "priority": 17,
-      "acceptanceCriteria": "Component applies activation values as vertex colors to mesh. Uses selected colormap from store. Updates colors each frame during playback. Performance: <1ms per frame."
+      "priority": 23,
+      "acceptanceCriteria": "Exports cividis (colorblind-safe), inferno (high contrast), plasma (publication) colormaps. Same interface as viridis. All perceptually uniform. Documented colorblind safety for each."
     },
     {
       "id": "viz-3",
-      "title": "Create components/biomechanics/ActivationLegend.tsx",
+      "title": "Create components/biomechanics/MuscleHeatmap.tsx",
       "passes": false,
-      "priority": 18,
-      "acceptanceCriteria": "Shows gradient bar with 0-1 scale labels. Matches current colormap. Positioned in corner of viewport. Toggle visibility from settings. Accessible color contrast."
+      "priority": 24,
+      "acceptanceCriteria": "Component applies activation values as vertex colors to mesh geometry. Uses selected colormap from store. Updates colors each frame during playback. Performance: <1ms per frame update."
     },
     {
       "id": "viz-4",
-      "title": "Create components/biomechanics/ForceVectors.tsx with ArrowHelper",
+      "title": "Implement heatmap color interpolation in useFrame",
       "passes": false,
-      "priority": 19,
-      "acceptanceCriteria": "Renders force vectors as arrows using THREE.ArrowHelper. Length scales with magnitude. Direction matches force data. Configurable scale factor. Toggle visibility."
+      "priority": 25,
+      "acceptanceCriteria": "Colors update smoothly during playback using useFrame. Interpolates between keyframes if data framerate differs from display. No visual artifacts during scrubbing. Uses ref-based updates (no state in useFrame)."
     },
     {
       "id": "viz-5",
-      "title": "Sync visualization updates with timeline playback",
+      "title": "Create components/biomechanics/ActivationLegend.tsx",
       "passes": false,
-      "priority": 20,
-      "acceptanceCriteria": "Heatmap and force vectors update in useFrame. Interpolate between keyframes if needed. Smooth transitions. No visual glitches during scrubbing."
+      "priority": 26,
+      "acceptanceCriteria": "Shows gradient bar with 0-1 scale labels (0%, 50%, 100%). Matches current colormap selection. Positioned in corner of viewport (bottom-right). Toggle visibility from settings. Accessible color contrast."
+    },
+    {
+      "id": "viz-6",
+      "title": "Add colormap selector to settings panel",
+      "passes": false,
+      "priority": 27,
+      "acceptanceCriteria": "Dropdown to select colormap (viridis, cividis, inferno, plasma). Preview gradient in dropdown. Updates heatmap immediately on selection. Persists selection in store. Indicates colorblind-safe options."
+    },
+    {
+      "id": "viz-7",
+      "title": "Add heatmap visibility toggle",
+      "passes": false,
+      "priority": 28,
+      "acceptanceCriteria": "Toggle button in settings to show/hide heatmap. Updates showHeatmap in store. Icon indicates current state. Keyboard shortcut 'H' for toggle. State persists during session."
+    },
+    {
+      "id": "force-1",
+      "title": "Create components/biomechanics/ForceVectors.tsx",
+      "passes": false,
+      "priority": 29,
+      "acceptanceCriteria": "Renders force vectors as arrows using THREE.ArrowHelper or custom geometry. Origin at force application point. Direction matches force data. Basic arrow styling (cone head)."
+    },
+    {
+      "id": "force-2",
+      "title": "Implement force magnitude scaling",
+      "passes": false,
+      "priority": 30,
+      "acceptanceCriteria": "Arrow length scales with force magnitude. Configurable scale factor in store (forceScale). Auto-scale option based on max force. Minimum/maximum length limits for visibility."
+    },
+    {
+      "id": "force-3",
+      "title": "Add force type color coding",
+      "passes": false,
+      "priority": 31,
+      "acceptanceCriteria": "Different colors for force types: GRF (red), joint reaction (blue), muscle (green). Color legend in UI. Toggle individual force types. Color scheme matches biomechanics conventions."
+    },
+    {
+      "id": "force-4",
+      "title": "Sync force vectors with timeline playback",
+      "passes": false,
+      "priority": 32,
+      "acceptanceCriteria": "Force vectors update in useFrame during playback. Interpolate between keyframes for smooth animation. Updates match current time in store. No visual glitches during scrubbing."
+    },
+    {
+      "id": "force-5",
+      "title": "Add force visibility toggle",
+      "passes": false,
+      "priority": 33,
+      "acceptanceCriteria": "Toggle button to show/hide all force vectors. Updates showForces in store. Keyboard shortcut 'F' for toggle. Can toggle individual force types separately. State persists during session."
+    },
+    {
+      "id": "force-6",
+      "title": "Add force scale slider control",
+      "passes": false,
+      "priority": 34,
+      "acceptanceCriteria": "Slider to adjust force vector scale factor (0.1x to 10x). Real-time preview as slider moves. Reset button to default scale. Value displayed next to slider. Uses shadcn/ui Slider."
     },
     {
       "id": "url-1",
       "title": "Create hooks/use-url-state.ts with lz-string compression",
       "passes": false,
-      "priority": 21,
-      "acceptanceCriteria": "Hook encodes state object to compressed URL parameter. Decodes on mount. Uses lz-string compressToEncodedURIComponent. Handles missing/invalid params gracefully."
+      "priority": 35,
+      "acceptanceCriteria": "Hook encodes state object to compressed URL parameter. Uses lz-string compressToEncodedURIComponent. Decodes on mount. Handles missing/invalid params gracefully. Returns encoded URL string."
     },
     {
       "id": "url-2",
-      "title": "Implement URL state encoding for camera, time, speed",
+      "title": "Implement URL state schema with version field",
       "passes": false,
-      "priority": 22,
-      "acceptanceCriteria": "URL updates when camera moves, time changes, or speed changes. Debounced to avoid excessive history entries. State schema versioned for future compatibility."
+      "priority": 36,
+      "acceptanceCriteria": "State schema includes: v (version), c (camera position array), t (camera target array), f (frame/time), p (playing boolean), s (speed). Schema versioned for future compatibility. TypeScript interface defined."
     },
     {
       "id": "url-3",
-      "title": "Implement URL state restoration on page load",
+      "title": "Implement camera position encoding in URL",
       "passes": false,
-      "priority": 23,
-      "acceptanceCriteria": "On mount, parse URL params and restore: camera position/target, current time, playback speed, visualization toggles. Smooth transition to restored state."
+      "priority": 37,
+      "acceptanceCriteria": "Camera position and target encoded when camera moves. Debounced to avoid excessive history entries (500ms). Precision limited to 2 decimal places to save space. Restored on page load."
     },
     {
       "id": "url-4",
+      "title": "Implement time and playback state encoding",
+      "passes": false,
+      "priority": 38,
+      "acceptanceCriteria": "Current time/frame encoded in URL. Playing/paused state encoded. Playback speed encoded. All restored accurately on page load. Updates URL on state change (debounced)."
+    },
+    {
+      "id": "url-5",
       "title": "Add Copy Link button with toast notification",
       "passes": false,
-      "priority": 24,
-      "acceptanceCriteria": "Button in toolbar copies current URL to clipboard. Shows success toast. Uses navigator.clipboard API. Fallback for older browsers. Accessible button with icon."
+      "priority": 39,
+      "acceptanceCriteria": "Button in toolbar copies current URL to clipboard. Shows success toast ('Link copied!'). Uses navigator.clipboard API. Fallback for older browsers (execCommand). Accessible button with icon and label."
+    },
+    {
+      "id": "url-6",
+      "title": "Implement URL state restoration on page load",
+      "passes": false,
+      "priority": 40,
+      "acceptanceCriteria": "On mount, parse URL params and restore: camera position/target, current time, playback speed, visualization toggles. Smooth transition to restored state. Error handling for corrupted URLs."
+    },
+    {
+      "id": "marker-1",
+      "title": "Create components/biomechanics/PointMarker.tsx",
+      "passes": false,
+      "priority": 41,
+      "acceptanceCriteria": "Component renders clickable point marker on 3D surface. Uses raycasting for placement. Visual style: small sphere with color. Hover state shows name. Click selects marker."
+    },
+    {
+      "id": "marker-2",
+      "title": "Create components/biomechanics/MarkerLabel.tsx using Html",
+      "passes": false,
+      "priority": 42,
+      "acceptanceCriteria": "Text label attached to marker using @react-three/drei Html component. Label follows marker in 3D space. Readable at any zoom level. Background for contrast. Close button to delete."
+    },
+    {
+      "id": "marker-3",
+      "title": "Implement marker placement on click",
+      "passes": false,
+      "priority": 43,
+      "acceptanceCriteria": "Click on model surface places new marker. Uses THREE.Raycaster for intersection. Marker snaps to surface point. Shows placement cursor when tool active. Stores marker position in scene data."
+    },
+    {
+      "id": "marker-4",
+      "title": "Add marker persistence to scene state",
+      "passes": false,
+      "priority": 44,
+      "acceptanceCriteria": "Markers saved with scene state. Persist across page refresh (localStorage). Export/import markers as JSON. Unique ID per marker. Markers associated with specific model."
+    },
+    {
+      "id": "marker-5",
+      "title": "Implement marker editing (move, delete, rename)",
+      "passes": false,
+      "priority": 45,
+      "acceptanceCriteria": "Select marker to show edit options. Drag to reposition marker. Delete button removes marker. Double-click label to edit text. Undo support for delete action."
+    },
+    {
+      "id": "marker-6",
+      "title": "Add distance measurement tool between markers",
+      "passes": false,
+      "priority": 46,
+      "acceptanceCriteria": "Click two markers to show distance between them. Line drawn between points. Distance displayed in mm/cm/m (configurable). Measurement persists until cleared. Export measurements."
+    },
+    {
+      "id": "export-1",
+      "title": "Create hooks/use-screenshot.ts for canvas capture",
+      "passes": false,
+      "priority": 47,
+      "acceptanceCriteria": "Hook captures current canvas to image. Uses renderer.domElement.toBlob(). Returns Blob and data URL. Handles WebGL context (preserveDrawingBuffer). Configurable format (PNG/JPEG)."
+    },
+    {
+      "id": "export-2",
+      "title": "Add screenshot button with resolution options",
+      "passes": false,
+      "priority": 48,
+      "acceptanceCriteria": "Screenshot button in toolbar. Dropdown for resolution: 1x, 2x, 4x current size. Shows preview of dimensions. Download triggers immediately. Uses timestamp in filename."
+    },
+    {
+      "id": "export-3",
+      "title": "Implement transparent background option for export",
+      "passes": false,
+      "priority": 49,
+      "acceptanceCriteria": "Toggle for transparent background in export dialog. Removes background color, keeps alpha. Works with PNG format only. Preview shows checkered pattern for transparency."
+    },
+    {
+      "id": "export-4",
+      "title": "Add download with automatic timestamp filename",
+      "passes": false,
+      "priority": 50,
+      "acceptanceCriteria": "Downloaded files named: meshmotion-YYYY-MM-DD-HHmmss.png. User can override filename. Preserves extension based on format. Uses FileSaver.js or native download."
+    },
+    {
+      "id": "export-5",
+      "title": "Implement video recording with MediaRecorder",
+      "passes": false,
+      "priority": 51,
+      "acceptanceCriteria": "Record button starts canvas recording. Uses MediaRecorder API. Progress indicator during recording. Stop button ends and downloads. Format: WebM (default browser codec)."
+    },
+    {
+      "id": "export-6",
+      "title": "Add recording duration and progress UI",
+      "passes": false,
+      "priority": 52,
+      "acceptanceCriteria": "Timer shows recording duration. Progress bar if recording fixed duration. Max duration limit (5 minutes). Cancel button to abort. Shows file size estimate."
+    },
+    {
+      "id": "compare-1",
+      "title": "Create components/biomechanics/ComparisonView.tsx",
+      "passes": false,
+      "priority": 53,
+      "acceptanceCriteria": "Component renders split-screen layout. Two independent viewport areas. Configurable split direction (vertical/horizontal). Drag divider to adjust split ratio."
+    },
+    {
+      "id": "compare-2",
+      "title": "Implement dual canvas rendering",
+      "passes": false,
+      "priority": 54,
+      "acceptanceCriteria": "Two R3F Canvas instances or single canvas with viewports. Each viewport loads different model. Independent camera controls per viewport. Reasonable performance (30fps minimum with two models)."
+    },
+    {
+      "id": "compare-3",
+      "title": "Add synchronized playback toggle",
+      "passes": false,
+      "priority": 55,
+      "acceptanceCriteria": "Toggle to sync/unsync playback between views. Synced: both play/pause together, same time. Unsynced: independent control. Visual indicator of sync state. Keyboard shortcut 'S' for toggle."
+    },
+    {
+      "id": "compare-4",
+      "title": "Implement synchronized camera controls option",
+      "passes": false,
+      "priority": 56,
+      "acceptanceCriteria": "Toggle to sync camera angle between views. Synced: rotating one rotates both. Useful for comparing same angle. Independent zoom still possible. Reset both cameras button."
+    },
+    {
+      "id": "compare-5",
+      "title": "Add model selector per viewport",
+      "passes": false,
+      "priority": 57,
+      "acceptanceCriteria": "Each viewport has model dropdown. Load different models per side. Support for 'Before/After' labels. Clear visual indication of which model is which."
+    },
+    {
+      "id": "embed-1",
+      "title": "Create /app/embed/[id]/page.tsx route for embeds",
+      "passes": false,
+      "priority": 58,
+      "acceptanceCriteria": "Minimal embed page route. Loads scene from URL parameters. Reduced UI chrome. Fullscreen viewport focus. No navigation elements. Responsive sizing."
+    },
+    {
+      "id": "embed-2",
+      "title": "Create embed code generator UI",
+      "passes": false,
+      "priority": 59,
+      "acceptanceCriteria": "Dialog shows embed iframe code. Configurable width/height. Copy code button. Preview of embed appearance. Includes current state in embed URL."
+    },
+    {
+      "id": "embed-3",
+      "title": "Implement postMessage API for parent communication",
+      "passes": false,
+      "priority": 60,
+      "acceptanceCriteria": "Embed responds to postMessage commands: play, pause, seekTo, setCamera. Sends events back: onReady, onTimeUpdate, onPlay, onPause. Validates message origin. Documented API."
+    },
+    {
+      "id": "embed-4",
+      "title": "Add embed customization parameters",
+      "passes": false,
+      "priority": 61,
+      "acceptanceCriteria": "URL parameters for: controls (show/hide), autoplay (true/false), loop (true/false), branding (show/hide). All parameters optional with sensible defaults."
+    },
+    {
+      "id": "pose-1",
+      "title": "Create components/biomechanics/LivePoseCapture.tsx",
+      "passes": false,
+      "priority": 62,
+      "acceptanceCriteria": "Component requests camera access. Displays video feed in corner PiP. Shows start/stop capture buttons. Privacy indicator when camera active. Handles permission denial gracefully."
+    },
+    {
+      "id": "pose-2",
+      "title": "Integrate MediaPipe Pose for landmark detection",
+      "passes": false,
+      "priority": 63,
+      "acceptanceCriteria": "MediaPipe Pose loaded and initialized. Detects 33 body landmarks. Runs in real-time on video feed. Confidence scores for each landmark. Works on desktop and mobile."
+    },
+    {
+      "id": "pose-3",
+      "title": "Create skeleton overlay visualization on video",
+      "passes": false,
+      "priority": 64,
+      "acceptanceCriteria": "Draws skeleton lines on video canvas. Landmarks shown as colored dots. Connections match body structure. Updates in real-time. Toggle overlay visibility."
+    },
+    {
+      "id": "pose-4",
+      "title": "Map MediaPipe landmarks to 3D model skeleton",
+      "passes": false,
+      "priority": 65,
+      "acceptanceCriteria": "Converts 2D landmarks to 3D model joint rotations. Calibration step for T-pose. Model mirrors user movement. Smoothing to reduce jitter. Configurable mapping for different models."
+    },
+    {
+      "id": "pose-5",
+      "title": "Add One-Euro filter for pose smoothing",
+      "passes": false,
+      "priority": 66,
+      "acceptanceCriteria": "Implements One-Euro filter for landmark smoothing. Configurable min cutoff and beta parameters. Reduces jitter while maintaining responsiveness. Applied per-landmark."
+    },
+    {
+      "id": "settings-1",
+      "title": "Create components/biomechanics/SettingsPanel.tsx",
+      "passes": false,
+      "priority": 67,
+      "acceptanceCriteria": "Collapsible settings panel on right side. Tabbed sections: Visualization, Playback, Export. Glassmorphism styling. Persists open/closed state. Responsive layout on mobile."
+    },
+    {
+      "id": "settings-2",
+      "title": "Add lighting preset selector",
+      "passes": false,
+      "priority": 68,
+      "acceptanceCriteria": "Dropdown for lighting presets: Studio, Natural, Dramatic, Flat. Updates scene lighting immediately. Preview thumbnails in dropdown. Custom intensity slider."
+    },
+    {
+      "id": "settings-3",
+      "title": "Add background color/environment picker",
+      "passes": false,
+      "priority": 69,
+      "acceptanceCriteria": "Color picker for solid background. Preset options: Dark, Light, Gradient. Environment map options for reflections. Transparent option for screenshots."
+    },
+    {
+      "id": "a11y-1",
+      "title": "Add keyboard navigation for all controls",
+      "passes": false,
+      "priority": 70,
+      "acceptanceCriteria": "All buttons/controls reachable via Tab. Focus indicators visible. Enter/Space activates buttons. Escape closes dialogs. Arrow keys for sliders. Logical tab order."
+    },
+    {
+      "id": "a11y-2",
+      "title": "Add screen reader labels and ARIA attributes",
+      "passes": false,
+      "priority": 71,
+      "acceptanceCriteria": "All interactive elements have aria-label or aria-labelledby. Live regions for playback state changes. Semantic HTML structure. Tested with NVDA/VoiceOver."
+    },
+    {
+      "id": "a11y-3",
+      "title": "Ensure WCAG AA color contrast compliance",
+      "passes": false,
+      "priority": 72,
+      "acceptanceCriteria": "All text has 4.5:1 contrast ratio minimum. Interactive elements have 3:1 contrast. Tested with browser accessibility tools. Focus indicators clearly visible."
     },
     {
       "id": "polish-1",
-      "title": "Final integration test, performance verification, accessibility check",
+      "title": "Add loading states and skeleton UI",
       "passes": false,
-      "priority": 25,
-      "acceptanceCriteria": "All features work together. TypeScript compiles clean. ESLint passes. 60fps maintained. <100 draw calls. Keyboard navigation works. Screen reader compatible. WCAG AA contrast."
+      "priority": 73,
+      "acceptanceCriteria": "Loading spinner during file import. Skeleton placeholders for panels during load. Progress indicator for large files. Smooth transitions between states."
+    },
+    {
+      "id": "polish-2",
+      "title": "Add error boundaries for 3D components",
+      "passes": false,
+      "priority": 74,
+      "acceptanceCriteria": "Error boundary wraps Canvas. Graceful fallback UI on crash. Error logged to console. Retry/reload option. User-friendly error message."
+    },
+    {
+      "id": "polish-3",
+      "title": "Optimize render performance for 60fps target",
+      "passes": false,
+      "priority": 75,
+      "acceptanceCriteria": "Profile with stats-gl. Draw calls under 100. No unnecessary re-renders. Memoize expensive computations. useFrame mutations only via refs. 60fps with medium model."
+    },
+    {
+      "id": "polish-4",
+      "title": "Add memory cleanup on component unmount",
+      "passes": false,
+      "priority": 76,
+      "acceptanceCriteria": "All Three.js resources disposed properly. Geometries, materials, textures cleaned up. No memory leaks on route change. Tested with DevTools Memory tab."
+    },
+    {
+      "id": "polish-5",
+      "title": "Final TypeScript strict mode compliance",
+      "passes": false,
+      "priority": 77,
+      "acceptanceCriteria": "TypeScript compiles with no errors. No implicit any. All props properly typed. Strict null checks pass. No ts-ignore comments."
+    },
+    {
+      "id": "polish-6",
+      "title": "Final ESLint pass and code cleanup",
+      "passes": false,
+      "priority": 78,
+      "acceptanceCriteria": "ESLint passes with no errors or warnings. No console.log statements. Consistent code formatting. Dead code removed. Imports organized."
     }
   ]
 }
